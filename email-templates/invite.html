@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invite accepted — Transport Builder</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background-color: #0f172a; color: #e2e8f0; -webkit-font-smoothing: antialiased; }
+    .wrapper { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 24px; }
+    .header { text-align: center; padding-bottom: 32px; border-bottom: 1px solid #1e293b; }
+    .logo-mark { display: inline-block; width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 12px; line-height: 48px; text-align: center; font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 16px; }
+    .brand-name { font-size: 20px; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em; }
+    .brand-name span { color: #3b82f6; }
+    .content { padding: 40px 0; text-align: center; }
+    .content h1 { font-size: 24px; font-weight: 700; color: #f8fafc; margin-bottom: 16px; letter-spacing: -0.02em; }
+    .content p { font-size: 16px; line-height: 1.6; color: #94a3b8; margin-bottom: 8px; }
+    .action-button { display: inline-block; margin: 32px 0; padding: 14px 40px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 10px; }
+    .fallback { margin-top: 8px; padding: 16px 20px; background: #1e293b; border-radius: 8px; border: 1px dashed #334155; }
+    .fallback p { font-size: 13px; color: #64748b; margin-bottom: 8px; }
+    .fallback a { font-size: 13px; color: #60a5fa; word-break: break-all; text-decoration: none; }
+    .footer { padding-top: 32px; border-top: 1px solid #1e293b; text-align: center; }
+    .footer p { font-size: 13px; color: #475569; line-height: 1.6; }
+    .footer a { color: #60a5fa; text-decoration: none; }
+    .icon-circle { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: rgba(34,197,94,0.1); border-radius: 50%; margin-bottom: 24px; }
+    .icon-circle svg { width: 28px; height: 28px; fill: none; stroke: #22c55e; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="logo-mark">TB</div>
+      <div class="brand-name">Transport<span>Builder</span></div>
+    </div>
+    <div class="content">
+      <div class="icon-circle">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <h1>You've been invited!</h1>
+      <p>You've been invited to join Transport Builder.</p>
+      <p>Accept the invite below to get started.</p>
+      <a href="{{ .ConfirmationURL }}" class="action-button">Accept Invite</a>
+      <div class="fallback">
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>You're receiving this because you were invited to <a href="https://transportbuilder.xyz">Transport Builder</a>.</p>
+      <p>If you weren't expecting this, you can safely ignore this email.</p>
+    </div>
+  </div>
+</body>
+</html>
