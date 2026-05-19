@@ -1,0 +1,1407 @@
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import {
+  Truck,
+  Package,
+  Clock,
+  Shield,
+  Globe,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Phone,
+  MapPin,
+  Send,
+  Loader2,
+  Menu,
+  X,
+  ArrowRight,
+  CheckCircle,
+} from "lucide-react";
+
+// =============================================================================
+// Types
+// =============================================================================
+
+interface TemplateProps {
+  siteName: string;
+  config: {
+    primary_color: string;
+    secondary_color: string;
+    font_heading: string;
+    font_body: string;
+    site_title: string;
+    meta_description: string;
+    og_image_url: string;
+    favicon_url: string;
+  };
+  sections: {
+    hero: {
+      is_enabled: boolean;
+      content: {
+        headline: string;
+        subheadline: string;
+        cta_text: string;
+        cta_link: string;
+        logo_url: string;
+        images: string[];
+      };
+    };
+    about: {
+      is_enabled: boolean;
+      content: {
+        heading: string;
+        body: string;
+        image_url: string;
+      };
+    };
+    services: {
+      is_enabled: boolean;
+      content: {
+        services: {
+          icon: string;
+          title: string;
+          description: string;
+        }[];
+      };
+    };
+    calculator: {
+      is_enabled: boolean;
+      content: {
+        heading: string;
+        description: string;
+        show_map: boolean;
+      };
+    };
+    testimonials: {
+      is_enabled: boolean;
+      content: {
+        testimonials: {
+          name: string;
+          company: string;
+          text: string;
+          rating: number;
+        }[];
+      };
+    };
+    contact: {
+      is_enabled: boolean;
+      content: {
+        heading: string;
+        email: string;
+        phone: string;
+        address: string;
+        map_embed_url: string;
+      };
+    };
+    footer: {
+      is_enabled: boolean;
+      content: {
+        company_name: string;
+        copyright_text: string;
+        links: { label: string; url: string }[];
+      };
+    };
+  };
+  rateTable?: {
+    base_rate_per_km: number;
+    minimum_fee: number;
+    currency: string;
+    vehicle_surcharges: { type: string; surcharge: number }[];
+  };
+  integrations?: {
+    ga4_id: string;
+    google_place_id: string;
+  };
+  plan: "starter" | "pro" | "premium";
+}
+
+// =============================================================================
+// Icon mapping
+// =============================================================================
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  truck: Truck,
+  package: Package,
+  clock: Clock,
+  shield: Shield,
+  globe: Globe,
+};
+
+function ServiceIcon({ icon, className }: { icon: string; className?: string }) {
+  const IconComponent = ICON_MAP[icon.toLowerCase()] ?? Truck;
+  return <IconComponent className={className} />;
+}
+
+// =============================================================================
+// Smooth scroll helper
+// =============================================================================
+
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+// =============================================================================
+// Google Analytics injection
+// =============================================================================
+
+function GoogleAnalytics({ ga4Id }: { ga4Id: string }) {
+  useEffect(() => {
+    if (!ga4Id || typeof window === "undefined") return;
+
+    // Inject gtag script
+    const script = document.createElement("script");
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${ga4Id}`;
+    script.async = true;
+    document.head.appendChild(script);
+
+    // Inject gtag init
+    const inline = document.createElement("script");
+    inline.innerHTML = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${ga4Id}');
+    `;
+    document.head.appendChild(inline);
+
+    return () => {
+      document.head.removeChild(script);
+      document.head.removeChild(inline);
+    };
+  }, [ga4Id]);
+
+  return null;
+}
+
+// =============================================================================
+// Star Rating
+// =============================================================================
+
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {Array.from({ length: 5 }, (_, i) => (
+        <Star
+          key={i}
+          className={`h-4 w-4 ${
+            i < rating
+              ? "fill-yellow-400 text-yellow-400"
+              : "fill-gray-200 text-gray-200"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+// =============================================================================
+// Hero Section
+// =============================================================================
+
+function HeroSection({
+  content,
+  primaryColor,
+  logoUrl,
+}: {
+  content: TemplateProps["sections"]["hero"]["content"];
+  primaryColor: string;
+  logoUrl: string;
+}) {
+  const [currentImage, setCurrentImage] = useState(0);
+  const images = content.images?.filter(Boolean) ?? [];
+  const hasImages = images.length > 0;
+  const hasMultiple = images.length > 1;
+
+  // Auto-rotate carousel
+  useEffect(() => {
+    if (!hasMultiple) return;
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [hasMultiple, images.length]);
+
+  return (
+    <section
+      id="hero"
+      className="relative flex items-center justify-center overflow-hidden"
+      style={{ minHeight: "70vh" }}
+    >
+      {/* Background */}
+      {hasImages ? (
+        <>
+          {images.map((src, idx) => (
+            <div
+              key={idx}
+              className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+              style={{
+                backgroundImage: `url(${src})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                opacity: idx === currentImage ? 1 : 0,
+              }}
+            />
+          ))}
+        </>
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(135deg, ${primaryColor} 0%, #1a1a2e 60%, #16213e 100%)`,
+          }}
+        />
+      )}
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/55" />
+
+      {/* Logo — top left */}
+      {logoUrl && (
+        <div className="absolute top-6 left-6 z-20 md:top-8 md:left-8">
+          <img
+            src={logoUrl}
+            alt="Logo"
+            className="h-10 md:h-12 w-auto object-contain brightness-0 invert"
+          />
+        </div>
+      )}
+
+      {/* Carousel dots */}
+      {hasMultiple && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {images.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setCurrentImage(idx)}
+              className="h-2 rounded-full transition-all duration-300"
+              style={{
+                width: idx === currentImage ? "24px" : "8px",
+                backgroundColor:
+                  idx === currentImage ? primaryColor : "rgba(255,255,255,0.5)",
+              }}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <h1
+          className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight mb-6"
+          style={{ fontFamily: "var(--tp-font-heading)" }}
+        >
+          {content.headline}
+        </h1>
+        {content.subheadline && (
+          <p
+            className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed"
+            style={{ fontFamily: "var(--tp-font-body)" }}
+          >
+            {content.subheadline}
+          </p>
+        )}
+        {content.cta_text && (
+          <a
+            href={content.cta_link || "#contact"}
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg text-white font-bold text-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+            style={{
+              backgroundColor: primaryColor,
+              fontFamily: "var(--tp-font-body)",
+            }}
+          >
+            {content.cta_text}
+            <ArrowRight className="h-5 w-5" />
+          </a>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// =============================================================================
+// About Section
+// =============================================================================
+
+function AboutSection({
+  content,
+  primaryColor,
+}: {
+  content: TemplateProps["sections"]["about"]["content"];
+  primaryColor: string;
+}) {
+  return (
+    <section id="about" className="py-20 md:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+          {/* Text */}
+          <div>
+            <div
+              className="h-1 w-16 mb-6 rounded-full"
+              style={{ backgroundColor: primaryColor }}
+            />
+            <h2
+              className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6 leading-tight"
+              style={{ fontFamily: "var(--tp-font-heading)" }}
+            >
+              {content.heading}
+            </h2>
+            <p
+              className="text-gray-600 text-base md:text-lg leading-relaxed whitespace-pre-line"
+              style={{ fontFamily: "var(--tp-font-body)" }}
+            >
+              {content.body}
+            </p>
+          </div>
+
+          {/* Image */}
+          {content.image_url && (
+            <div className="relative">
+              <div
+                className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl"
+                style={{ backgroundColor: primaryColor, opacity: 0.1 }}
+              />
+              <img
+                src={content.image_url}
+                alt={content.heading}
+                className="relative rounded-2xl shadow-xl w-full h-auto object-cover aspect-[4/3]"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// =============================================================================
+// Services Section
+// =============================================================================
+
+function ServicesSection({
+  content,
+  primaryColor,
+  secondaryColor,
+}: {
+  content: TemplateProps["sections"]["services"]["content"];
+  primaryColor: string;
+  secondaryColor: string;
+}) {
+  const services = content.services ?? [];
+
+  return (
+    <section
+      id="services"
+      className="py-20 md:py-28"
+      style={{ backgroundColor: secondaryColor + "12" }}
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <h2
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)" }}
+          >
+            Our Services
+          </h2>
+          <p
+            className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto"
+            style={{ fontFamily: "var(--tp-font-body)" }}
+          >
+            Reliable, efficient, and tailored to your logistics needs
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {services.map((service, idx) => (
+            <div
+              key={idx}
+              className="group bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                className="inline-flex items-center justify-center h-14 w-14 rounded-xl mb-5 transition-colors duration-300"
+                style={{
+                  backgroundColor: primaryColor + "15",
+                  color: primaryColor,
+                }}
+              >
+                <ServiceIcon icon={service.icon} className="h-7 w-7" />
+              </div>
+              <h3
+                className="text-xl font-bold text-gray-900 mb-3"
+                style={{ fontFamily: "var(--tp-font-heading)" }}
+              >
+                {service.title}
+              </h3>
+              <p
+                className="text-gray-500 text-sm md:text-base leading-relaxed"
+                style={{ fontFamily: "var(--tp-font-body)" }}
+              >
+                {service.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// =============================================================================
+// Calculator Section (Pro/Premium only)
+// =============================================================================
+
+interface CalculatorResult {
+  distance_km: number;
+  base_cost: number;
+  surcharge: number;
+  total: number;
+  currency: string;
+}
+
+function CalculatorSection({
+  content,
+  rateTable,
+  primaryColor,
+  secondaryColor,
+  siteName,
+}: {
+  content: TemplateProps["sections"]["calculator"]["content"];
+  rateTable: TemplateProps["rateTable"];
+  primaryColor: string;
+  secondaryColor: string;
+  siteName: string;
+}) {
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [vehicleType, setVehicleType] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<CalculatorResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const surcharges = rateTable?.vehicle_surcharges ?? [];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!origin.trim() || !destination.trim()) return;
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = await fetch("/api/calculator", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          siteName,
+          origin: origin.trim(),
+          destination: destination.trim(),
+          vehicle_type: vehicleType || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to get quote. Please try again.");
+      }
+
+      const data = await res.json();
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section
+      id="calculator"
+      className="py-20 md:py-28 bg-white"
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <h2
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)" }}
+          >
+            {content.heading || "Get an Instant Quote"}
+          </h2>
+          {content.description && (
+            <p
+              className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto"
+              style={{ fontFamily: "var(--tp-font-body)" }}
+            >
+              {content.description}
+            </p>
+          )}
+        </div>
+
+        <div className="max-w-2xl mx-auto">
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-2xl border border-gray-100 bg-gray-50/50 p-8 shadow-sm space-y-5"
+          >
+            {/* Origin */}
+            <div>
+              <label
+                htmlFor="calc-origin"
+                className="block text-sm font-semibold text-gray-700 mb-1.5"
+                style={{ fontFamily: "var(--tp-font-body)" }}
+              >
+                Origin
+              </label>
+              <input
+                id="calc-origin"
+                type="text"
+                required
+                placeholder="e.g. London, UK"
+                value={origin}
+                onChange={(e) => setOrigin(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                style={{ fontFamily: "var(--tp-font-body)" }}
+              />
+            </div>
+
+            {/* Destination */}
+            <div>
+              <label
+                htmlFor="calc-destination"
+                className="block text-sm font-semibold text-gray-700 mb-1.5"
+                style={{ fontFamily: "var(--tp-font-body)" }}
+              >
+                Destination
+              </label>
+              <input
+                id="calc-destination"
+                type="text"
+                required
+                placeholder="e.g. Manchester, UK"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                style={{ fontFamily: "var(--tp-font-body)" }}
+              />
+            </div>
+
+            {/* Vehicle Type */}
+            {surcharges.length > 0 && (
+              <div>
+                <label
+                  htmlFor="calc-vehicle"
+                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                  style={{ fontFamily: "var(--tp-font-body)" }}
+                >
+                  Vehicle Type
+                </label>
+                <select
+                  id="calc-vehicle"
+                  value={vehicleType}
+                  onChange={(e) => setVehicleType(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                  style={{ fontFamily: "var(--tp-font-body)" }}
+                >
+                  <option value="">Standard (no surcharge)</option>
+                  {surcharges.map((v, idx) => (
+                    <option key={idx} value={v.type}>
+                      {v.type} (+{rateTable?.currency ?? "£"}{v.surcharge.toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-white font-bold text-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:opacity-60 disabled:pointer-events-none"
+              style={{
+                backgroundColor: primaryColor,
+                fontFamily: "var(--tp-font-body)",
+              }}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Calculating…
+                </>
+              ) : (
+                <>
+                  Get Quote
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Result */}
+          {result && (
+            <div className="mt-8 rounded-2xl border border-green-100 bg-green-50/50 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <h3 className="text-lg font-bold text-green-800">Quote Ready</h3>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Distance</span>
+                  <span className="font-semibold text-gray-900">
+                    {result.distance_km.toFixed(1)} km
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Base cost</span>
+                  <span className="font-semibold text-gray-900">
+                    {result.currency}{result.base_cost.toFixed(2)}
+                  </span>
+                </div>
+                {result.surcharge > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Vehicle surcharge</span>
+                    <span className="font-semibold text-gray-900">
+                      +{result.currency}{result.surcharge.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                <div className="border-t border-green-200 pt-2 flex justify-between">
+                  <span className="font-bold text-green-800">Total</span>
+                  <span className="font-bold text-green-800 text-lg">
+                    {result.currency}{result.total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="mt-8 rounded-2xl border border-red-100 bg-red-50/50 p-6">
+              <p className="text-red-700 text-sm font-medium">{error}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// =============================================================================
+// Testimonials Section
+// =============================================================================
+
+function TestimonialsSection({
+  content,
+  primaryColor,
+}: {
+  content: TemplateProps["sections"]["testimonials"]["content"];
+  primaryColor: string;
+}) {
+  const testimonials = content.testimonials ?? [];
+  const [current, setCurrent] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const prev = () => {
+    setCurrent((c) => (c > 0 ? c - 1 : testimonials.length - 1));
+  };
+  const next = () => {
+    setCurrent((c) => (c < testimonials.length - 1 ? c + 1 : 0));
+  };
+
+  if (testimonials.length === 0) return null;
+
+  return (
+    <section id="testimonials" className="py-20 md:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <h2
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)" }}
+          >
+            What Our Clients Say
+          </h2>
+        </div>
+
+        {/* Mobile: single card with carousel controls */}
+        <div className="md:hidden">
+          <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 shadow-sm">
+            <StarRating rating={testimonials[current].rating} />
+            <p
+              className="text-gray-700 mt-4 mb-6 leading-relaxed text-sm"
+              style={{ fontFamily: "var(--tp-font-body)" }}
+            >
+              &ldquo;{testimonials[current].text}&rdquo;
+            </p>
+            <div>
+              <p className="font-bold text-gray-900 text-sm">
+                {testimonials[current].name}
+              </p>
+              <p className="text-gray-500 text-xs">
+                {testimonials[current].company}
+              </p>
+            </div>
+          </div>
+          {testimonials.length > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <button
+                type="button"
+                onClick={prev}
+                className="h-10 w-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <span className="text-sm text-gray-400">
+                {current + 1} / {testimonials.length}
+              </span>
+              <button
+                type="button"
+                onClick={next}
+                className="h-10 w-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: grid */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {testimonials.map((t, idx) => (
+            <div
+              key={idx}
+              className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <StarRating rating={t.rating} />
+              <p
+                className="text-gray-700 mt-4 mb-6 leading-relaxed"
+                style={{ fontFamily: "var(--tp-font-body)" }}
+              >
+                &ldquo;{t.text}&rdquo;
+              </p>
+              <div>
+                <p className="font-bold text-gray-900">{t.name}</p>
+                <p className="text-gray-500 text-sm">{t.company}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// =============================================================================
+// Contact Section
+// =============================================================================
+
+function ContactSection({
+  content,
+  primaryColor,
+  siteName,
+}: {
+  content: TemplateProps["sections"]["contact"]["content"];
+  primaryColor: string;
+  siteName: string;
+}) {
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleChange = (field: string, value: string) => {
+    setFormState((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          siteId: siteName,
+          name: formState.name,
+          email: formState.email,
+          phone: formState.phone,
+          message: formState.message,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to send message. Please try again.");
+      }
+
+      setSubmitted(true);
+      setFormState({ name: "", email: "", phone: "", message: "" });
+    } catch (err: any) {
+      setSubmitError(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <section
+      id="contact"
+      className="py-20 md:py-28"
+      style={{ backgroundColor: "var(--tp-secondary, #f8fafc)" }}
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <h2
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)" }}
+          >
+            {content.heading || "Get in Touch"}
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
+          {/* Form */}
+          <div>
+            {submitted ? (
+              <div className="rounded-2xl border border-green-100 bg-green-50 p-8 text-center">
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-green-800 mb-2">
+                  Message Sent!
+                </h3>
+                <p className="text-green-700 text-sm">
+                  We&apos;ll get back to you as soon as possible.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="mt-4 text-sm font-medium underline text-green-700 hover:text-green-900"
+                >
+                  Send another message
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Name */}
+                <div>
+                  <label
+                    htmlFor="contact-name"
+                    className="block text-sm font-semibold text-gray-700 mb-1.5"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  >
+                    Full Name
+                  </label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    required
+                    value={formState.name}
+                    onChange={(e) => handleChange("name", e.target.value)}
+                    placeholder="John Smith"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor="contact-email"
+                    className="block text-sm font-semibold text-gray-700 mb-1.5"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    required
+                    value={formState.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                    placeholder="john@example.com"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label
+                    htmlFor="contact-phone"
+                    className="block text-sm font-semibold text-gray-700 mb-1.5"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  >
+                    Phone
+                  </label>
+                  <input
+                    id="contact-phone"
+                    type="tel"
+                    value={formState.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    placeholder="+44 7700 900000"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  />
+                </div>
+
+                {/* Message */}
+                <div>
+                  <label
+                    htmlFor="contact-message"
+                    className="block text-sm font-semibold text-gray-700 mb-1.5"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="contact-message"
+                    required
+                    rows={4}
+                    value={formState.message}
+                    onChange={(e) => handleChange("message", e.target.value)}
+                    placeholder="Tell us about your transport needs…"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20 resize-y"
+                    style={{ fontFamily: "var(--tp-font-body)" }}
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-white font-bold text-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:opacity-60 disabled:pointer-events-none"
+                  style={{
+                    backgroundColor: primaryColor,
+                    fontFamily: "var(--tp-font-body)",
+                  }}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Send Message
+                    </>
+                  )}
+                </button>
+
+                {submitError && (
+                  <p className="text-red-600 text-sm font-medium">
+                    {submitError}
+                  </p>
+                )}
+              </form>
+            )}
+          </div>
+
+          {/* Contact Info + Map */}
+          <div className="space-y-6">
+            <div className="space-y-4">
+              {content.email && (
+                <div className="flex items-start gap-3">
+                  <div
+                    className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
+                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
+                  >
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Email</p>
+                    <a
+                      href={`mailto:${content.email}`}
+                      className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                      {content.email}
+                    </a>
+                  </div>
+                </div>
+              )}
+              {content.phone && (
+                <div className="flex items-start gap-3">
+                  <div
+                    className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
+                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
+                  >
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Phone</p>
+                    <a
+                      href={`tel:${content.phone}`}
+                      className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                      {content.phone}
+                    </a>
+                  </div>
+                </div>
+              )}
+              {content.address && (
+                <div className="flex items-start gap-3">
+                  <div
+                    className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
+                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
+                  >
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Address</p>
+                    <p className="text-sm text-gray-500">{content.address}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Map embed */}
+            {content.map_embed_url && (
+              <div className="rounded-xl overflow-hidden border border-gray-200 mt-4">
+                <iframe
+                  src={content.map_embed_url}
+                  width="100%"
+                  height="280"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Map"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// =============================================================================
+// Footer Section
+// =============================================================================
+
+function FooterSection({
+  content,
+  primaryColor,
+}: {
+  content: TemplateProps["sections"]["footer"]["content"];
+  primaryColor: string;
+}) {
+  return (
+    <footer className="bg-gray-900 text-gray-300">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          {/* Company name + copyright */}
+          <div>
+            <p
+              className="text-xl font-bold text-white mb-1"
+              style={{ fontFamily: "var(--tp-font-heading)" }}
+            >
+              {content.company_name}
+            </p>
+            <p className="text-sm text-gray-500">{content.copyright_text}</p>
+          </div>
+
+          {/* Links */}
+          {content.links && content.links.length > 0 && (
+            <nav className="flex flex-wrap gap-x-6 gap-y-2">
+              {content.links.map((link, idx) => (
+                <a
+                  key={idx}
+                  href={link.url}
+                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  style={{ fontFamily: "var(--tp-font-body)" }}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+          )}
+        </div>
+
+        {/* Bottom accent line */}
+        <div
+          className="mt-8 h-0.5 w-20 rounded-full"
+          style={{ backgroundColor: primaryColor }}
+        />
+      </div>
+    </footer>
+  );
+}
+
+// =============================================================================
+// Mobile Navigation
+// =============================================================================
+
+function MobileNav({
+  primaryColor,
+  sections,
+}: {
+  primaryColor: string;
+  sections: TemplateProps["sections"];
+}) {
+  const [open, setOpen] = useState(false);
+
+  const navItems = [
+    { id: "about", label: "About", show: sections.about.is_enabled },
+    { id: "services", label: "Services", show: sections.services.is_enabled },
+    {
+      id: "calculator",
+      label: "Calculator",
+      show: sections.calculator.is_enabled,
+    },
+    {
+      id: "testimonials",
+      label: "Testimonials",
+      show: sections.testimonials.is_enabled,
+    },
+    { id: "contact", label: "Contact", show: sections.contact.is_enabled },
+  ].filter((i) => i.show);
+
+  return (
+    <>
+      {/* Hamburger */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="fixed top-4 right-4 z-50 md:hidden h-10 w-10 rounded-lg bg-black/40 backdrop-blur-sm flex items-center justify-center text-white"
+        aria-label="Open menu"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {/* Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Drawer */}
+      <div
+        className={`fixed top-0 right-0 z-50 h-full w-72 bg-white shadow-2xl transform transition-transform duration-300 md:hidden ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <span className="font-bold text-gray-900">Menu</span>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <nav className="p-4 space-y-1">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                scrollToSection(item.id);
+                setOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium text-sm transition-colors"
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+    </>
+  );
+}
+
+// =============================================================================
+// Desktop Sticky Nav
+// =============================================================================
+
+function DesktopNav({
+  primaryColor,
+  sections,
+}: {
+  primaryColor: string;
+  sections: TemplateProps["sections"];
+}) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 100);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const navItems = [
+    { id: "about", label: "About", show: sections.about.is_enabled },
+    { id: "services", label: "Services", show: sections.services.is_enabled },
+    {
+      id: "calculator",
+      label: "Calculator",
+      show: sections.calculator.is_enabled,
+    },
+    {
+      id: "testimonials",
+      label: "Testimonials",
+      show: sections.testimonials.is_enabled,
+    },
+    { id: "contact", label: "Contact", show: sections.contact.is_enabled },
+  ].filter((i) => i.show);
+
+  return (
+    <nav
+      className={`hidden md:flex fixed top-0 left-0 right-0 z-40 items-center justify-between px-8 h-16 transition-all duration-300 ${
+        scrolled
+          ? "bg-white/95 backdrop-blur-md shadow-sm"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="flex items-center gap-6">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => scrollToSection(item.id)}
+            className={`text-sm font-medium transition-colors ${
+              scrolled
+                ? "text-gray-700 hover:text-gray-900"
+                : "text-white/80 hover:text-white"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      {sections.contact.is_enabled && (
+        <button
+          type="button"
+          onClick={() => scrollToSection("contact")}
+          className="rounded-lg px-5 py-2 text-sm font-bold text-white transition-all hover:scale-105"
+          style={{ backgroundColor: primaryColor }}
+        >
+          Get a Quote
+        </button>
+      )}
+    </nav>
+  );
+}
+
+// =============================================================================
+// Main Template Component
+// =============================================================================
+
+export default function HaulierBold(props: TemplateProps) {
+  const {
+    siteName,
+    config,
+    sections,
+    rateTable,
+    integrations,
+    plan,
+  } = props;
+
+  const primaryColor = config.primary_color || "#e63946";
+  const secondaryColor = config.secondary_color || "#1d3557";
+
+  const isProOrAbove = plan === "pro" || plan === "premium";
+
+  return (
+    <>
+      {/* Google Analytics */}
+      {integrations?.ga4_id && <GoogleAnalytics ga4Id={integrations.ga4_id} />}
+
+      {/* Wrapper with CSS custom properties for dynamic theming */}
+      <div
+        style={
+          {
+            "--tp-primary": primaryColor,
+            "--tp-secondary": secondaryColor,
+            "--tp-font-heading": config.font_heading || "inherit",
+            "--tp-font-body": config.font_body || "inherit",
+          } as React.CSSProperties
+        }
+        className="min-h-screen bg-white text-gray-900 antialiased"
+      >
+        {/* Navigation */}
+        <DesktopNav primaryColor={primaryColor} sections={sections} />
+        <MobileNav primaryColor={primaryColor} sections={sections} />
+
+        {/* Hero */}
+        {sections.hero.is_enabled && (
+          <HeroSection
+            content={sections.hero.content}
+            primaryColor={primaryColor}
+            logoUrl={sections.hero.content.logo_url}
+          />
+        )}
+
+        {/* About */}
+        {sections.about.is_enabled && (
+          <AboutSection
+            content={sections.about.content}
+            primaryColor={primaryColor}
+          />
+        )}
+
+        {/* Services */}
+        {sections.services.is_enabled && (
+          <ServicesSection
+            content={sections.services.content}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+          />
+        )}
+
+        {/* Calculator — Pro/Premium only */}
+        {sections.calculator.is_enabled && isProOrAbove && (
+          <CalculatorSection
+            content={sections.calculator.content}
+            rateTable={rateTable}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            siteName={siteName}
+          />
+        )}
+
+        {/* Testimonials */}
+        {sections.testimonials.is_enabled && (
+          <TestimonialsSection
+            content={sections.testimonials.content}
+            primaryColor={primaryColor}
+          />
+        )}
+
+        {/* Contact */}
+        {sections.contact.is_enabled && (
+          <ContactSection
+            content={sections.contact.content}
+            primaryColor={primaryColor}
+            siteName={siteName}
+          />
+        )}
+
+        {/* Footer */}
+        {sections.footer.is_enabled && (
+          <FooterSection
+            content={sections.footer.content}
+            primaryColor={primaryColor}
+          />
+        )}
+      </div>
+    </>
+  );
+}
