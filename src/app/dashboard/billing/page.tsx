@@ -19,21 +19,27 @@ import type { Subscription, SubscriptionPlan } from '@/lib/types'
 
 const PLAN_INFO: Record<
   SubscriptionPlan,
-  { label: string; price: string; description: string }
+  { label: string; monthlyPrice: string; yearlyPrice: string; setupFee: string; description: string }
 > = {
   starter: {
     label: 'Starter',
-    price: '$29/mo',
+    monthlyPrice: '$29/mo',
+    yearlyPrice: '$278/yr',
+    setupFee: '$49',
     description: 'Basic landing page with standard features',
   },
   pro: {
     label: 'Pro',
-    price: '$49/mo',
-    description: 'Custom domain, analytics, and priority support',
+    monthlyPrice: '$49/mo',
+    yearlyPrice: '$470/yr',
+    setupFee: '$99',
+    description: 'Custom domain, rate calculator, and analytics',
   },
   premium: {
     label: 'Premium',
-    price: '$79/mo',
+    monthlyPrice: '$79/mo',
+    yearlyPrice: '$758/yr',
+    setupFee: '$199',
     description: 'White-label, advanced integrations, and dedicated support',
   },
 }
@@ -84,6 +90,7 @@ async function redirectToCheckout(formData: FormData) {
 
   const siteId = formData.get('siteId') as string
   const plan = formData.get('plan') as string
+  const billing = (formData.get('billing') as string) || 'monthly'
 
   if (!siteId || !plan) {
     redirect('/dashboard/billing')
@@ -97,18 +104,54 @@ async function redirectToCheckout(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { redirect('/login'); return }
 
-  const priceMap: Record<string, string | undefined> = {
-    starter: process.env.STRIPE_STARTER_PRICE_ID,
-    pro: process.env.STRIPE_PRO_PRICE_ID,
-    premium: process.env.STRIPE_PREMIUM_PRICE_ID,
+  // Monthly + yearly price IDs
+  const priceMap: Record<string, Record<string, string | undefined>> = {
+    monthly: {
+      starter: process.env.STRIPE_STARTER_PRICE_ID,
+      pro: process.env.STRIPE_PRO_PRICE_ID,
+      premium: process.env.STRIPE_PREMIUM_PRICE_ID,
+    },
+    yearly: {
+      starter: process.env.STRIPE_STARTER_YEARLY_PRICE_ID,
+      pro: process.env.STRIPE_PRO_YEARLY_PRICE_ID,
+      premium: process.env.STRIPE_PREMIUM_YEARLY_PRICE_ID,
+    },
   }
-  const priceId = priceMap[plan]
+
+  // Setup fee price IDs
+  const setupFeeMap: Record<string, string | undefined> = {
+    starter: process.env.STRIPE_STARTER_SETUP_FEE_ID,
+    pro: process.env.STRIPE_PRO_SETUP_FEE_ID,
+    premium: process.env.STRIPE_PREMIUM_SETUP_FEE_ID,
+  }
+
+  const priceId = priceMap[billing]?.[plan]
   if (!priceId) { redirect('/dashboard/billing'); return }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-  // Look up existing customer
+  // Check if upgrade — no setup fee
   const { data: existingSub } = await supabase
+    .from('subscriptions')
+    .select('id')
+    .eq('site_id', siteId)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  const isUpgrade = !!existingSub
+
+  // Build line items
+  const lineItems: Record<string, any>[] = [
+    { price: priceId, quantity: 1 },
+  ]
+
+  const setupFeeId = setupFeeMap[plan]
+  if (!isUpgrade && setupFeeId) {
+    lineItems.push({ price: setupFeeId, quantity: 1 })
+  }
+
+  // Look up existing customer
+  const { data: existingCustomer } = await supabase
     .from('subscriptions')
     .select('stripe_customer_id')
     .eq('user_id', user.id)
@@ -119,14 +162,14 @@ async function redirectToCheckout(formData: FormData) {
   const params: Record<string, any> = {
     mode: 'subscription',
     payment_method_types: ['card'],
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: lineItems,
     success_url: 'https://transportbuilder.xyz/dashboard',
     cancel_url: 'https://transportbuilder.xyz/dashboard/billing',
-    metadata: { site_id: siteId, user_id: user.id, plan },
+    metadata: { site_id: siteId, user_id: user.id, plan, billing, is_upgrade: isUpgrade ? 'true' : 'false' },
   }
 
-  if (existingSub?.stripe_customer_id) {
-    params.customer = existingSub.stripe_customer_id
+  if (existingCustomer?.stripe_customer_id) {
+    params.customer = existingCustomer.stripe_customer_id
   } else {
     params.customer_email = user.email ?? undefined
   }
@@ -293,7 +336,7 @@ export default async function BillingPage() {
                       <p className="font-medium text-gray-900">
                         {info.label}{' '}
                         <span className="text-gray-500 font-normal">
-                          ({info.price})
+                          ({info.monthlyPrice})
                         </span>
                       </p>
                     </div>
@@ -380,7 +423,13 @@ export default async function BillingPage() {
                   </CardTitle>
                   <CardDescription className="text-gray-500">
                     <span className="text-2xl font-bold text-gray-900">
-                      {info.price}
+                      {info.monthlyPrice}
+                    </span>
+                    <span className="text-sm text-gray-400 block mt-0.5">
+                      or {info.yearlyPrice} (save 20%)
+                    </span>
+                    <span className="text-xs text-gray-400 block mt-1">
+                      + {info.setupFee} setup fee
                     </span>
                   </CardDescription>
                 </CardHeader>

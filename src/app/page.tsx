@@ -124,6 +124,8 @@ const plans = [
   {
     name: "Starter",
     price: 29,
+    yearlyPrice: 278,
+    setupFee: 49,
     description: "A professional site for your transport business",
     features: [
       "1 landing page site",
@@ -139,6 +141,8 @@ const plans = [
   {
     name: "Pro",
     price: 49,
+    yearlyPrice: 470,
+    setupFee: 99,
     description: "Turn your site into a lead-generation machine",
     features: [
       "Everything in Starter",
@@ -154,6 +158,8 @@ const plans = [
   {
     name: "Premium",
     price: 79,
+    yearlyPrice: 758,
+    setupFee: 199,
     description: "For companies that need full power",
     features: [
       "Everything in Pro",
@@ -492,7 +498,8 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {plans.map((plan) => {
-              const price = billing === "yearly" ? Math.round(plan.price * 0.8) : plan.price;
+              const price = billing === "yearly" ? Math.round(plan.yearlyPrice / 12) : plan.price;
+              const displayTotal = billing === "yearly" ? plan.yearlyPrice : null;
               return (
                 <div
                   key={plan.name}
@@ -512,9 +519,10 @@ export default function Home() {
                   <div className="mt-6 mb-6">
                     <span className="text-4xl font-heading font-bold text-gray-900">${price}</span>
                     <span className="text-gray-400">/mo</span>
-                    {billing === "yearly" && (
-                      <p className="text-xs text-gray-400 mt-1">Billed annually (${price * 12}/yr)</p>
+                    {billing === "yearly" && displayTotal && (
+                      <p className="text-xs text-gray-400 mt-1">Billed annually (${displayTotal}/yr)</p>
                     )}
+                    <p className="text-xs text-gray-400 mt-1">+ ${plan.setupFee} setup fee</p>
                   </div>
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature) => (
