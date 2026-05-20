@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const url = `https://${site.slug}.transitpage.com`
+    const url = `https://${site.slug}.transportbuilder.xyz`
 
     return NextResponse.json({ success: true, url })
   } catch (err: any) {

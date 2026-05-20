@@ -1,5 +1,5 @@
 /**
- * Content sanitization utilities for TransitPage.
+ * Content sanitization utilities for Transport Builder.
  * Prevents XSS in user-generated content before rendering or export.
  */
 

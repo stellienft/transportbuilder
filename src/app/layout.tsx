@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "TransitPage — Landing Pages for Transport Companies",
+  title: "Transport Builder — Landing Pages for Transport Companies",
   description: "Create a professional transport company website in minutes. Pick a template, customise it, connect your domain.",
 };
 

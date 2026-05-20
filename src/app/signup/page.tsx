@@ -108,7 +108,7 @@ export default function SignupPage() {
             Create Account
           </CardTitle>
           <CardDescription className="text-gray-500 text-base">
-            Get started with your free TransitPage account
+            Get started with your free Transport Builder account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>

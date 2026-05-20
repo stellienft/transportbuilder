@@ -23,7 +23,7 @@ export async function createDnsRecord(subdomain: string, dropletIp: string) {
     },
     body: JSON.stringify({
       type: 'A',
-      name: `${subdomain}.transitpage.com`,
+      name: `${subdomain}.transportbuilder.xyz`,
       content: dropletIp,
       ttl: 1, // Auto TTL
       proxied: true, // Orange cloud — Cloudflare proxy for SSL + DDoS protection

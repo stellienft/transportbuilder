@@ -4,7 +4,7 @@ function getApiToken(): string {
   return process.env.DIGITALOCEAN_API_TOKEN!;
 }
 
-// The snapshot ID of the base TransitPage image (Ubuntu + Nginx + Node + config-pull script)
+// The snapshot ID of the base Transport Builder image (Ubuntu + Nginx + Node + config-pull script)
 // This should be set once after creating the base snapshot
 const BASE_SNAPSHOT_ID = process.env.DO_BASE_SNAPSHOT_ID || '';
 

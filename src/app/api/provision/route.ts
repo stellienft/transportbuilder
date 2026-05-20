@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     // If already provisioned, return the existing URL
     // -----------------------------------------------------------------------
     if (site.droplet_id) {
-      const url = `https://${site.slug}.transitpage.com`
+      const url = `https://${site.slug}.transportbuilder.xyz`
       return NextResponse.json({ success: true, url, alreadyProvisioned: true })
     }
 
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const url = `https://${site.slug}.transitpage.com`
+    const url = `https://${site.slug}.transportbuilder.xyz`
 
     return NextResponse.json({
       success: true,

@@ -1,5 +1,5 @@
 // =============================================================================
-// TransitPage — Default content factory for each template slug
+// Transport Builder — Default content factory for each template slug
 // =============================================================================
 // When a user creates a new site, this module provides pre-filled content
 // matching the template they chose, so the site looks fully built from day one.
