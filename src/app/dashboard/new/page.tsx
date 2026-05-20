@@ -80,6 +80,13 @@ const TEMPLATE_VISUALS: Record<string, TemplateVisual> = {
     accentLabel: "Outback Amber",
     style: "Rustic & Warm",
   },
+  "cargo-shipping": {
+    heroImage: "https://images.unsplash.com/photo-1494412574643-ff11b0a5eb19?w=800&q=80",
+    primaryColor: "#1a3c6e",
+    secondaryColor: "#0a1f3d",
+    accentLabel: "Navy Blue",
+    style: "Corporate & Professional",
+  },
 };
 
 // ---------------------------------------------------------------------------

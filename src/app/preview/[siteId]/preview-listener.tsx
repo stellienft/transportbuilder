@@ -6,6 +6,7 @@ import HaulierBold from '@/components/templates/haulier-bold'
 import ExpressClean from '@/components/templates/express-clean'
 import FreightPro from '@/components/templates/freight-pro'
 import OutbackHaul from '@/components/templates/outback-haul'
+import CargoShipping from '@/components/templates/cargo-shipping'
 
 export interface PreviewState {
   site: Site | null
@@ -90,6 +91,8 @@ function TemplateRenderer({ state, sectionsMap }: { state: PreviewState; section
       return <FreightPro {...commonProps} />
     case 'outback-haul':
       return <OutbackHaul {...commonProps} />
+    case 'cargo-shipping':
+      return <CargoShipping {...commonProps} />
     default:
       return <HaulierBold {...commonProps} />
   }

@@ -43,6 +43,12 @@ const TEMPLATE_DEFAULTS: Record<string, TemplateDefaults> = {
     font_heading: "Inter",
     font_body: "Inter",
   },
+  "cargo-shipping": {
+    primary_color: "#1a3c6e",
+    secondary_color: "#0a1f3d",
+    font_heading: "Inter",
+    font_body: "Inter",
+  },
 };
 
 // -----------------------------------------------------------------------------
@@ -519,6 +525,84 @@ const CONTENT_MAP: Record<string, Record<SectionKey, SectionContentMap[SectionKe
         { label: "Privacy", url: "/privacy" },
         { label: "Terms", url: "/terms" },
         { label: "Our Routes", url: "/routes" },
+      ],
+    },
+  },
+
+  "cargo-shipping": {
+    hero: {
+      headline: "Get your free quote today",
+      subheadline:
+        "Professional cargo and shipping solutions with global reach and local expertise.",
+      cta_text: "Learn More",
+      cta_link: "#contact",
+      logo_url: "",
+      images: [IMG.trucksHighway, IMG.containersPort, IMG.warehouseOps],
+    },
+    stats: {
+      stats: [
+        { value: "11", suffix: "+", label: "Years Working Experience" },
+        { value: "80", suffix: "K", label: "Clients & Partners" },
+        { value: "2.7", prefix: "$", suffix: "B", label: "E-commerce Orders" },
+        { value: "99.2", suffix: "%", label: "On-Time Delivery" },
+      ],
+    },
+    about: {
+      heading: "We give you the full range global logistics solution",
+      body: "At our company, we are more than just a logistics provider — we are the architects of seamless supply chains, the navigators of global trade, and the enablers of business growth. With a passion for innovation and a commitment to excellence, we deliver solutions that move your business forward.\n\nFrom land freight to ocean cargo, air express to warehousing, we provide end-to-end logistics services tailored to your needs. Our experienced team ensures every shipment arrives safely, on time, and within budget.",
+      image_url: IMG.freightYard,
+    },
+    services: {
+      services: [
+        {
+          icon: "truck",
+          title: "Land Freight Transportation",
+          description:
+            "Reliable road freight services covering every corner of the country. From full truckloads to part-load consolidation.",
+        },
+        {
+          icon: "globe",
+          title: "Air Freight Transportation",
+          description:
+            "Express air cargo for time-critical shipments. Priority handling with real-time tracking from origin to destination.",
+        },
+        {
+          icon: "anchor",
+          title: "Ocean Freight Transportation",
+          description:
+            "Cost-effective sea freight for bulk and containerised cargo. FCL and LCL options across all major trade routes.",
+        },
+        {
+          icon: "warehouse",
+          title: "Warehousing & Distribution",
+          description:
+            "Strategic warehousing with pick-pack-ship services, inventory management, and cross-dock distribution.",
+        },
+      ],
+    },
+    calculator: {
+      heading: "Instant Shipping Calculator",
+      description:
+        "Enter your pickup and delivery locations for an estimated freight cost.",
+      show_map: false,
+    },
+    testimonials: { testimonials: HAULIER_BOLD_TESTIMONIALS },
+    contact: {
+      heading: "Get In Touch",
+      email: "info@cargoshipping.com.au",
+      phone: "+61 2 9000 1234",
+      address: "1 Harbour Street, Sydney NSW 2000, Australia",
+      map_embed_url:
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312!2d151.2!3d-33.87!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzPCsDUyJzEyLjAiUyAxNTHCsDEyJzAwLjAiRQ!5e0!3m2!1sen!2sau!4v1234567890",
+    },
+    footer: {
+      company_name: "Cargo Shipping Co.",
+      copyright_text:
+        "© 2024 Cargo Shipping Co. Pty Ltd. All rights reserved.",
+      links: [
+        { label: "Privacy Policy", url: "/privacy" },
+        { label: "Terms of Service", url: "/terms" },
+        { label: "Track Shipment", url: "/track" },
       ],
     },
   },
