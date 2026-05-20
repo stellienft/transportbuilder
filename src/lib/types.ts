@@ -73,6 +73,7 @@ export type Site = {
 
 export type SectionKey =
   | 'hero'
+  | 'stats'
   | 'about'
   | 'services'
   | 'calculator'
@@ -97,6 +98,17 @@ export type AboutContent = {
   heading: string;
   body: string;
   image_url: string | null;
+};
+
+export type StatItem = {
+  value: string;
+  label: string;
+  prefix?: string;
+  suffix?: string;
+};
+
+export type StatsContent = {
+  stats: StatItem[];
 };
 
 export type ServiceItem = {
@@ -147,6 +159,7 @@ export type FooterContent = {
 
 export type SectionContentMap = {
   hero: HeroContent;
+  stats: StatsContent;
   about: AboutContent;
   services: ServicesContent;
   calculator: CalculatorContent;

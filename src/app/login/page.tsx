@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod/v3";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,82 +52,90 @@ export default function LoginPage() {
       });
 
       if (authError) {
+        // Detect unverified email
+        if (authError.message.toLowerCase().includes("email not confirmed")) {
+          toast.error("Email not verified", {
+            description: "Please check your inbox and verify your email before logging in.",
+            duration: 6000,
+          });
+        }
         setError(authError.message);
         return;
       }
 
       router.push("/dashboard");
       router.refresh();
-    } catch {
-      setError("An unexpected error occurred. Please try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
+      setError(message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-950 to-slate-900 px-4">
-      <Card className="w-full max-w-md bg-slate-900 border-slate-800">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-white">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+      <Card className="w-full max-w-md bg-white border-gray-200 shadow-sm">
+        <CardHeader className="space-y-2 pb-6">
+          <CardTitle className="text-3xl font-heading font-bold text-gray-900">
             Log In
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-500 text-base">
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             {error && (
-              <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
                 {error}
               </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">
+            <div className="space-y-2.5">
+              <Label htmlFor="email" className="text-gray-700 text-sm">
                 Email
               </Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="h-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p className="text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
+            <div className="space-y-2.5">
+              <Label htmlFor="password" className="text-gray-700 text-sm">
                 Password
               </Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="h-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                 {...register("password")}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
+          <CardFooter className="flex flex-col gap-5 pt-4">
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-10 bg-gray-900 hover:bg-gray-800 text-white"
               size="lg"
               disabled={loading}
             >
               {loading ? "Logging in…" : "Log In"}
             </Button>
-            <p className="text-sm text-slate-400 text-center">
+            <p className="text-sm text-gray-500 text-center">
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
-                className="text-primary hover:underline font-medium"
+                className="text-gray-900 hover:underline font-medium"
               >
                 Sign up
               </Link>

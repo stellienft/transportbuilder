@@ -1,14 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import type { Site, SiteSection, RateTable, SiteIntegration, SubscriptionPlan } from '@/lib/types'
 import HaulierBold from '@/components/templates/haulier-bold'
 import ExpressClean from '@/components/templates/express-clean'
 import FreightPro from '@/components/templates/freight-pro'
 import OutbackHaul from '@/components/templates/outback-haul'
 
-export interface PreviewState {
-  site: Site | null
+export interface SiteRendererState {
+  site: Site
   sections: SiteSection[]
   rateTable: RateTable | null
   integration: SiteIntegration | null
@@ -38,20 +37,13 @@ function buildSectionsMap(sections: SiteSection[]) {
       }
     }
   }
-  // Ensure stats section exists even if not in DB yet
-  if (!result.stats) {
-    result.stats = { is_enabled: false, content: { stats: [] } }
-  }
   return result
 }
 
-interface PreviewListenerProps {
-  initialState: PreviewState
-}
-
-function TemplateRenderer({ state, sectionsMap }: { state: PreviewState; sectionsMap: typeof defaultSections }) {
-  const site = state.site!
-  const config = site.config ?? {}
+export default function SiteRenderer({ initialState }: { initialState: SiteRendererState }) {
+  const site = initialState.site
+  const config = site.config ?? ({} as any)
+  const sectionsMap = buildSectionsMap(initialState.sections)
 
   const commonProps = {
     siteName: site.name,
@@ -66,24 +58,24 @@ function TemplateRenderer({ state, sectionsMap }: { state: PreviewState; section
       favicon_url: config.favicon_url ?? '',
     },
     sections: sectionsMap,
-    rateTable: state.rateTable
+    rateTable: initialState.rateTable
       ? {
-          base_rate_per_km: state.rateTable.base_rate_per_km,
-          minimum_fee: state.rateTable.minimum_fee,
-          currency: state.rateTable.currency,
-          vehicle_surcharges: state.rateTable.vehicle_surcharges,
+          base_rate_per_km: initialState.rateTable.base_rate_per_km,
+          minimum_fee: initialState.rateTable.minimum_fee,
+          currency: initialState.rateTable.currency,
+          vehicle_surcharges: initialState.rateTable.vehicle_surcharges,
         }
       : undefined,
-    integrations: state.integration
+    integrations: initialState.integration
       ? {
-          ga4_id: state.integration.ga4_id ?? '',
-          google_place_id: state.integration.google_place_id ?? '',
+          ga4_id: initialState.integration.ga4_id ?? '',
+          google_place_id: initialState.integration.google_place_id ?? '',
         }
       : undefined,
-    plan: state.plan,
+    plan: initialState.plan,
   }
 
-  switch (state.templateSlug ?? 'haulier-bold') {
+  switch (initialState.templateSlug ?? 'haulier-bold') {
     case 'express-clean':
       return <ExpressClean {...commonProps} />
     case 'freight-pro':
@@ -93,35 +85,4 @@ function TemplateRenderer({ state, sectionsMap }: { state: PreviewState; section
     default:
       return <HaulierBold {...commonProps} />
   }
-}
-
-export default function PreviewListener({ initialState }: PreviewListenerProps) {
-  const [state, setState] = useState<PreviewState>(initialState)
-
-  useEffect(() => {
-    function handleMessage(event: MessageEvent) {
-      if (event.data?.type !== 'transitpage-update') return
-
-      const { site, sections, rateTable, integration } = event.data
-
-      setState((prev) => ({
-        site: site ?? prev.site,
-        sections: sections ?? prev.sections,
-        rateTable: rateTable ?? prev.rateTable,
-        integration: integration ?? prev.integration,
-        plan: prev.plan,
-        templateSlug: prev.templateSlug,
-      }))
-    }
-
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [])
-
-  const site = state.site
-  if (!site) return null
-
-  const sectionsMap = buildSectionsMap(state.sections)
-
-  return <TemplateRenderer state={state} sectionsMap={sectionsMap} />
 }

@@ -19,6 +19,7 @@ import {
   X,
   ArrowRight,
   CheckCircle,
+  Zap,
 } from "lucide-react";
 
 // =============================================================================
@@ -139,6 +140,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   clock: Clock,
   shield: Shield,
   globe: Globe,
+  zap: Zap,
 };
 
 function ServiceIcon({ icon, className }: { icon: string; className?: string }) {
@@ -165,13 +167,11 @@ function GoogleAnalytics({ ga4Id }: { ga4Id: string }) {
   useEffect(() => {
     if (!ga4Id || typeof window === "undefined") return;
 
-    // Inject gtag script
     const script = document.createElement("script");
     script.src = `https://www.googletagmanager.com/gtag/js?id=${ga4Id}`;
     script.async = true;
     document.head.appendChild(script);
 
-    // Inject gtag init
     const inline = document.createElement("script");
     inline.innerHTML = `
       window.dataLayer = window.dataLayer || [];
@@ -200,9 +200,9 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${
+          className={`h-3.5 w-3.5 ${
             i < rating
-              ? "fill-yellow-400 text-yellow-400"
+              ? "fill-sky-400 text-sky-400"
               : "fill-gray-200 text-gray-200"
           }`}
         />
@@ -231,12 +231,11 @@ function HeroSection({
   const hasImages = images.length > 0;
   const hasMultiple = images.length > 1;
 
-  // Auto-rotate carousel
   useEffect(() => {
     if (!hasMultiple) return;
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(interval);
   }, [hasMultiple, images.length]);
 
@@ -244,15 +243,15 @@ function HeroSection({
     <section
       id="hero"
       className="relative flex items-center justify-center overflow-hidden"
-      style={{ minHeight: "70vh" }}
+      style={{ minHeight: "80vh" }}
     >
-      {/* Background */}
+      {/* Background images */}
       {hasImages ? (
         <>
           {images.map((src, idx) => (
             <div
               key={idx}
-              className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+              className="absolute inset-0 transition-opacity duration-1500 ease-in-out"
               style={{
                 backgroundImage: `url(${src})`,
                 backgroundSize: "cover",
@@ -266,13 +265,19 @@ function HeroSection({
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor} 0%, #1a1a2e 60%, #16213e 100%)`,
+            background: `linear-gradient(160deg, #f8fafc 0%, ${primaryColor}22 50%, #f8fafc 100%)`,
           }}
         />
       )}
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/55" />
+      {/* Soft gradient overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(248,250,252,0.3) 0%, rgba(248,250,252,0.55) 40%, rgba(248,250,252,0.75) 100%)",
+        }}
+      />
 
       {/* Logo — top left */}
       {(logoUrl || siteName) && (
@@ -281,7 +286,7 @@ function HeroSection({
             <img
               src={logoUrl}
               alt="Logo"
-              className="h-10 md:h-12 w-auto object-contain brightness-0 invert"
+              className="h-10 md:h-12 w-auto object-contain"
             />
           ) : (
             <span
@@ -296,17 +301,18 @@ function HeroSection({
 
       {/* Carousel dots */}
       {hasMultiple && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2.5">
           {images.map((_, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => setCurrentImage(idx)}
-              className="h-2 rounded-full transition-all duration-300"
+              className="rounded-full transition-all duration-500"
               style={{
-                width: idx === currentImage ? "24px" : "8px",
+                width: idx === currentImage ? "28px" : "8px",
+                height: "8px",
                 backgroundColor:
-                  idx === currentImage ? primaryColor : "rgba(255,255,255,0.5)",
+                  idx === currentImage ? primaryColor : "rgba(15,23,42,0.2)",
               }}
               aria-label={`Go to slide ${idx + 1}`}
             />
@@ -315,16 +321,16 @@ function HeroSection({
       )}
 
       {/* Content */}
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+      <div className="relative z-10 text-center px-6 max-w-3xl mx-auto">
         <h1
-          className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight mb-6"
+          className="text-4xl md:text-5xl lg:text-6xl font-light text-slate-800 leading-snug tracking-tight mb-5"
           style={{ fontFamily: "var(--tp-font-heading)" }}
         >
           {content.headline}
         </h1>
         {content.subheadline && (
           <p
-            className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed"
+            className="text-base md:text-lg text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed font-light"
             style={{ fontFamily: "var(--tp-font-body)" }}
           >
             {content.subheadline}
@@ -333,14 +339,14 @@ function HeroSection({
         {content.cta_text && (
           <a
             href={content.cta_link || "#contact"}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg text-white font-bold text-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full text-white font-medium text-sm shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-1px]"
             style={{
               backgroundColor: primaryColor,
               fontFamily: "var(--tp-font-body)",
             }}
           >
             {content.cta_text}
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-4 w-4" />
           </a>
         )}
       </div>
@@ -360,43 +366,50 @@ function AboutSection({
   primaryColor: string;
 }) {
   return (
-    <section id="about" className="py-20 md:py-28 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+    <section id="about" className="py-24 md:py-32" style={{ backgroundColor: "#f8fafc" }}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-16 md:gap-20 items-center">
+          {/* Image with subtle parallax feel */}
+          {content.image_url && (
+            <div className="relative order-2 md:order-1">
+              <div
+                className="absolute -top-3 -left-3 w-full h-full rounded-2xl"
+                style={{ backgroundColor: primaryColor, opacity: 0.06 }}
+              />
+              <img
+                src={content.image_url}
+                alt={content.heading}
+                className="relative rounded-2xl w-full h-auto object-cover shadow-sm"
+                style={{ aspectRatio: "4/3" }}
+              />
+            </div>
+          )}
+
           {/* Text */}
-          <div>
-            <div
-              className="h-1 w-16 mb-6 rounded-full"
-              style={{ backgroundColor: primaryColor }}
-            />
+          <div className={`order-1 ${content.image_url ? "md:order-2" : ""}`}>
+            <span
+              className="inline-block text-xs font-medium tracking-widest uppercase mb-4"
+              style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+            >
+              About Us
+            </span>
             <h2
-              className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6 leading-tight"
+              className="text-3xl md:text-4xl font-light text-slate-800 mb-6 leading-snug"
               style={{ fontFamily: "var(--tp-font-heading)" }}
             >
               {content.heading}
             </h2>
+            <div
+              className="h-px w-12 mb-6"
+              style={{ backgroundColor: primaryColor, opacity: 0.4 }}
+            />
             <p
-              className="text-gray-600 text-base md:text-lg leading-relaxed whitespace-pre-line"
+              className="text-slate-500 text-sm md:text-base leading-relaxed whitespace-pre-line font-light"
               style={{ fontFamily: "var(--tp-font-body)" }}
             >
               {content.body}
             </p>
           </div>
-
-          {/* Image */}
-          {content.image_url && (
-            <div className="relative">
-              <div
-                className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl"
-                style={{ backgroundColor: primaryColor, opacity: 0.1 }}
-              />
-              <img
-                src={content.image_url}
-                alt={content.heading}
-                className="relative rounded-2xl shadow-xl w-full h-auto object-cover aspect-[4/3]"
-              />
-            </div>
-          )}
         </div>
       </div>
     </section>
@@ -410,7 +423,6 @@ function AboutSection({
 function ServicesSection({
   content,
   primaryColor,
-  secondaryColor,
 }: {
   content: TemplateProps["sections"]["services"]["content"];
   primaryColor: string;
@@ -419,50 +431,52 @@ function ServicesSection({
   const services = content.services ?? [];
 
   return (
-    <section
-      id="services"
-      className="py-20 md:py-28"
-      style={{ backgroundColor: secondaryColor + "12" }}
-    >
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-14">
+    <section id="services" className="py-24 md:py-32 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <span
+            className="inline-block text-xs font-medium tracking-widest uppercase mb-4"
+            style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+          >
+            What We Do
+          </span>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            className="text-3xl md:text-4xl font-light text-slate-800 mb-4"
             style={{ fontFamily: "var(--tp-font-heading)" }}
           >
             Our Services
           </h2>
           <p
-            className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto"
+            className="text-slate-400 text-sm max-w-lg mx-auto font-light"
             style={{ fontFamily: "var(--tp-font-body)" }}
           >
-            Reliable, efficient, and tailored to your logistics needs
+            Fast, reliable delivery solutions across Australia
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {services.map((service, idx) => (
             <div
               key={idx}
-              className="group bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className="group bg-white rounded-2xl border border-slate-100 p-7 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
             >
               <div
-                className="inline-flex items-center justify-center h-14 w-14 rounded-xl mb-5 transition-colors duration-300"
+                className="inline-flex items-center justify-center h-11 w-11 rounded-xl mb-5"
                 style={{
-                  backgroundColor: primaryColor + "15",
+                  backgroundColor: primaryColor + "10",
                   color: primaryColor,
                 }}
               >
-                <ServiceIcon icon={service.icon} className="h-7 w-7" />
+                <ServiceIcon icon={service.icon} className="h-5 w-5" />
               </div>
               <h3
-                className="text-xl font-bold text-gray-900 mb-3"
+                className="text-base font-medium text-slate-800 mb-2"
                 style={{ fontFamily: "var(--tp-font-heading)" }}
               >
                 {service.title}
               </h3>
               <p
-                className="text-gray-500 text-sm md:text-base leading-relaxed"
+                className="text-slate-400 text-sm leading-relaxed font-light"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               >
                 {service.description}
@@ -491,7 +505,6 @@ function CalculatorSection({
   content,
   rateTable,
   primaryColor,
-  secondaryColor,
   siteName,
 }: {
   content: TemplateProps["sections"]["calculator"]["content"];
@@ -544,21 +557,24 @@ function CalculatorSection({
   };
 
   return (
-    <section
-      id="calculator"
-      className="py-20 md:py-28 bg-white"
-    >
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="calculator" className="py-24 md:py-32" style={{ backgroundColor: "#f8fafc" }}>
+      <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
+          <span
+            className="inline-block text-xs font-medium tracking-widest uppercase mb-4"
+            style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+          >
+            Instant Quote
+          </span>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            className="text-3xl md:text-4xl font-light text-slate-800 mb-4"
             style={{ fontFamily: "var(--tp-font-heading)" }}
           >
-            {content.heading || "Get an Instant Quote"}
+            {content.heading || "Calculate Your Delivery Cost"}
           </h2>
           {content.description && (
             <p
-              className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto"
+              className="text-slate-400 text-sm max-w-lg mx-auto font-light"
               style={{ fontFamily: "var(--tp-font-body)" }}
             >
               {content.description}
@@ -566,16 +582,16 @@ function CalculatorSection({
           )}
         </div>
 
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-xl mx-auto">
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-gray-100 bg-gray-50/50 p-8 shadow-sm space-y-5"
+            className="rounded-2xl border border-slate-200/60 bg-white p-8 shadow-sm space-y-5"
           >
             {/* Origin */}
             <div>
               <label
                 htmlFor="calc-origin"
-                className="block text-sm font-semibold text-gray-700 mb-1.5"
+                className="block text-xs font-medium text-slate-500 mb-1.5 tracking-wide uppercase"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               >
                 Origin
@@ -584,10 +600,10 @@ function CalculatorSection({
                 id="calc-origin"
                 type="text"
                 required
-                placeholder="e.g. London, UK"
+                placeholder="e.g. Sydney, NSW"
                 value={origin}
                 onChange={(e) => setOrigin(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-800 text-sm outline-none transition-all focus:border-sky-300 focus:ring-2 focus:ring-sky-100 placeholder:text-slate-300"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               />
             </div>
@@ -596,7 +612,7 @@ function CalculatorSection({
             <div>
               <label
                 htmlFor="calc-destination"
-                className="block text-sm font-semibold text-gray-700 mb-1.5"
+                className="block text-xs font-medium text-slate-500 mb-1.5 tracking-wide uppercase"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               >
                 Destination
@@ -605,10 +621,10 @@ function CalculatorSection({
                 id="calc-destination"
                 type="text"
                 required
-                placeholder="e.g. Manchester, UK"
+                placeholder="e.g. Melbourne, VIC"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-800 text-sm outline-none transition-all focus:border-sky-300 focus:ring-2 focus:ring-sky-100 placeholder:text-slate-300"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               />
             </div>
@@ -618,7 +634,7 @@ function CalculatorSection({
               <div>
                 <label
                   htmlFor="calc-vehicle"
-                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                  className="block text-xs font-medium text-slate-500 mb-1.5 tracking-wide uppercase"
                   style={{ fontFamily: "var(--tp-font-body)" }}
                 >
                   Vehicle Type
@@ -627,13 +643,13 @@ function CalculatorSection({
                   id="calc-vehicle"
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-800 text-sm outline-none transition-all focus:border-sky-300 focus:ring-2 focus:ring-sky-100"
                   style={{ fontFamily: "var(--tp-font-body)" }}
                 >
                   <option value="">Standard (no surcharge)</option>
                   {surcharges.map((v, idx) => (
                     <option key={idx} value={v.type}>
-                      {v.type} (+{rateTable?.currency ?? "£"}{v.surcharge.toFixed(2)})
+                      {v.type} (+{rateTable?.currency ?? "$"}{v.surcharge.toFixed(2)})
                     </option>
                   ))}
                 </select>
@@ -644,7 +660,7 @@ function CalculatorSection({
             <button
               type="submit"
               disabled={loading}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-white font-bold text-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:opacity-60 disabled:pointer-events-none"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-white font-medium text-sm transition-all duration-300 hover:shadow-md hover:translate-y-[-1px] disabled:opacity-50 disabled:pointer-events-none"
               style={{
                 backgroundColor: primaryColor,
                 fontFamily: "var(--tp-font-body)",
@@ -652,7 +668,7 @@ function CalculatorSection({
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Calculating…
                 </>
               ) : (
@@ -666,35 +682,35 @@ function CalculatorSection({
 
           {/* Result */}
           {result && (
-            <div className="mt-8 rounded-2xl border border-green-100 bg-green-50/50 p-6">
+            <div className="mt-6 rounded-2xl border border-sky-100 bg-sky-50/40 p-6">
               <div className="flex items-center gap-2 mb-4">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <h3 className="text-lg font-bold text-green-800">Quote Ready</h3>
+                <CheckCircle className="h-4 w-4" style={{ color: primaryColor }} />
+                <h3 className="text-sm font-medium text-slate-800">Quote Ready</h3>
               </div>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Distance</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-slate-400">Distance</span>
+                  <span className="font-medium text-slate-700">
                     {result.distance_km.toFixed(1)} km
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Base cost</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-slate-400">Base cost</span>
+                  <span className="font-medium text-slate-700">
                     {result.currency}{result.base_cost.toFixed(2)}
                   </span>
                 </div>
                 {result.surcharge > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Vehicle surcharge</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-slate-400">Vehicle surcharge</span>
+                    <span className="font-medium text-slate-700">
                       +{result.currency}{result.surcharge.toFixed(2)}
                     </span>
                   </div>
                 )}
-                <div className="border-t border-green-200 pt-2 flex justify-between">
-                  <span className="font-bold text-green-800">Total</span>
-                  <span className="font-bold text-green-800 text-lg">
+                <div className="border-t border-sky-100 pt-2.5 flex justify-between">
+                  <span className="font-medium text-slate-800">Total</span>
+                  <span className="font-medium text-slate-800 text-lg">
                     {result.currency}{result.total.toFixed(2)}
                   </span>
                 </div>
@@ -704,8 +720,8 @@ function CalculatorSection({
 
           {/* Error */}
           {error && (
-            <div className="mt-8 rounded-2xl border border-red-100 bg-red-50/50 p-6">
-              <p className="text-red-700 text-sm font-medium">{error}</p>
+            <div className="mt-6 rounded-2xl border border-red-100 bg-red-50/40 p-6">
+              <p className="text-red-600 text-sm font-medium">{error}</p>
             </div>
           )}
         </div>
@@ -727,7 +743,6 @@ function TestimonialsSection({
 }) {
   const testimonials = content.testimonials ?? [];
   const [current, setCurrent] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const prev = () => {
     setCurrent((c) => (c > 0 ? c - 1 : testimonials.length - 1));
@@ -739,78 +754,84 @@ function TestimonialsSection({
   if (testimonials.length === 0) return null;
 
   return (
-    <section id="testimonials" className="py-20 md:py-28 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-14">
+    <section id="testimonials" className="py-24 md:py-32 bg-slate-50">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <span
+            className="inline-block text-xs font-medium tracking-widest uppercase mb-4"
+            style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+          >
+            Testimonials
+          </span>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            className="text-3xl md:text-4xl font-light text-slate-800 mb-4"
             style={{ fontFamily: "var(--tp-font-heading)" }}
           >
             What Our Clients Say
           </h2>
         </div>
 
-        {/* Mobile: single card with carousel controls */}
+        {/* Mobile: single card with carousel */}
         <div className="md:hidden">
-          <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 shadow-sm">
+          <div className="rounded-2xl border border-slate-100 bg-white p-7 shadow-sm">
             <StarRating rating={testimonials[current].rating} />
             <p
-              className="text-gray-700 mt-4 mb-6 leading-relaxed text-sm"
+              className="text-slate-600 mt-4 mb-6 leading-relaxed text-sm font-light"
               style={{ fontFamily: "var(--tp-font-body)" }}
             >
               &ldquo;{testimonials[current].text}&rdquo;
             </p>
             <div>
-              <p className="font-bold text-gray-900 text-sm">
+              <p className="font-medium text-slate-800 text-sm">
                 {testimonials[current].name}
               </p>
-              <p className="text-gray-500 text-xs">
+              <p className="text-slate-400 text-xs">
                 {testimonials[current].company}
               </p>
             </div>
           </div>
           {testimonials.length > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-6">
+            <div className="flex items-center justify-center gap-5 mt-6">
               <button
                 type="button"
                 onClick={prev}
-                className="h-10 w-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+                className="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors"
                 aria-label="Previous testimonial"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-sm text-gray-400">
+              <span className="text-xs text-slate-300">
                 {current + 1} / {testimonials.length}
               </span>
               <button
                 type="button"
                 onClick={next}
-                className="h-10 w-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+                className="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors"
                 aria-label="Next testimonial"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           )}
         </div>
 
         {/* Desktop: grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {testimonials.map((t, idx) => (
             <div
               key={idx}
-              className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="rounded-2xl border border-slate-100 bg-white p-7 shadow-sm hover:shadow transition-shadow duration-300"
             >
               <StarRating rating={t.rating} />
               <p
-                className="text-gray-700 mt-4 mb-6 leading-relaxed"
+                className="text-slate-600 mt-4 mb-6 leading-relaxed text-sm font-light"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               >
                 &ldquo;{t.text}&rdquo;
               </p>
               <div>
-                <p className="font-bold text-gray-900">{t.name}</p>
-                <p className="text-gray-500 text-sm">{t.company}</p>
+                <p className="font-medium text-slate-800 text-sm">{t.name}</p>
+                <p className="text-slate-400 text-xs">{t.company}</p>
               </div>
             </div>
           ))}
@@ -821,7 +842,7 @@ function TestimonialsSection({
 }
 
 // =============================================================================
-// Contact Section
+// Contact Section — Floating card style
 // =============================================================================
 
 function ContactSection({
@@ -879,230 +900,248 @@ function ContactSection({
   };
 
   return (
-    <section
-      id="contact"
-      className="py-20 md:py-28"
-      style={{ backgroundColor: "var(--tp-secondary, #f8fafc)" }}
-    >
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="contact" className="py-24 md:py-32 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
+          <span
+            className="inline-block text-xs font-medium tracking-widest uppercase mb-4"
+            style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+          >
+            Get in Touch
+          </span>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
+            className="text-3xl md:text-4xl font-light text-slate-800 mb-4"
             style={{ fontFamily: "var(--tp-font-heading)" }}
           >
-            {content.heading || "Get in Touch"}
+            {content.heading || "Contact Us"}
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
-          {/* Form */}
-          <div>
-            {submitted ? (
-              <div className="rounded-2xl border border-green-100 bg-green-50 p-8 text-center">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-green-800 mb-2">
-                  Message Sent!
-                </h3>
-                <p className="text-green-700 text-sm">
-                  We&apos;ll get back to you as soon as possible.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setSubmitted(false)}
-                  className="mt-4 text-sm font-medium underline text-green-700 hover:text-green-900"
-                >
-                  Send another message
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Name */}
-                <div>
-                  <label
-                    htmlFor="contact-name"
-                    className="block text-sm font-semibold text-gray-700 mb-1.5"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    id="contact-name"
-                    type="text"
-                    required
-                    value={formState.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    placeholder="John Smith"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  />
-                </div>
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-2xl border border-slate-200/60 bg-white shadow-lg p-8 md:p-10">
+            <div className="grid md:grid-cols-2 gap-10">
+              {/* Form */}
+              <div>
+                {submitted ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                    <div
+                      className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4"
+                      style={{ backgroundColor: primaryColor + "12", color: primaryColor }}
+                    >
+                      <CheckCircle className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-800 mb-2">
+                      Message Sent!
+                    </h3>
+                    <p className="text-slate-400 text-sm font-light">
+                      We&apos;ll get back to you shortly.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setSubmitted(false)}
+                      className="mt-4 text-sm font-medium underline text-slate-400 hover:text-slate-600"
+                    >
+                      Send another message
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Name */}
+                    <div>
+                      <label
+                        htmlFor="contact-name"
+                        className="block text-xs font-medium text-slate-500 mb-1.5 tracking-wide uppercase"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      >
+                        Full Name
+                      </label>
+                      <input
+                        id="contact-name"
+                        type="text"
+                        required
+                        value={formState.name}
+                        onChange={(e) => handleChange("name", e.target.value)}
+                        placeholder="Jane Smith"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-800 text-sm outline-none transition-all focus:border-sky-300 focus:ring-2 focus:ring-sky-100 placeholder:text-slate-300"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      />
+                    </div>
 
-                {/* Email */}
-                <div>
-                  <label
-                    htmlFor="contact-email"
-                    className="block text-sm font-semibold text-gray-700 mb-1.5"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  >
-                    Email
-                  </label>
-                  <input
-                    id="contact-email"
-                    type="email"
-                    required
-                    value={formState.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    placeholder="john@example.com"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  />
-                </div>
+                    {/* Email */}
+                    <div>
+                      <label
+                        htmlFor="contact-email"
+                        className="block text-xs font-medium text-slate-500 mb-1.5 tracking-wide uppercase"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      >
+                        Email
+                      </label>
+                      <input
+                        id="contact-email"
+                        type="email"
+                        required
+                        value={formState.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                        placeholder="jane@example.com.au"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-800 text-sm outline-none transition-all focus:border-sky-300 focus:ring-2 focus:ring-sky-100 placeholder:text-slate-300"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      />
+                    </div>
 
-                {/* Phone */}
-                <div>
-                  <label
-                    htmlFor="contact-phone"
-                    className="block text-sm font-semibold text-gray-700 mb-1.5"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  >
-                    Phone
-                  </label>
-                  <input
-                    id="contact-phone"
-                    type="tel"
-                    value={formState.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="+44 7700 900000"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  />
-                </div>
+                    {/* Phone */}
+                    <div>
+                      <label
+                        htmlFor="contact-phone"
+                        className="block text-xs font-medium text-slate-500 mb-1.5 tracking-wide uppercase"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      >
+                        Phone
+                      </label>
+                      <input
+                        id="contact-phone"
+                        type="tel"
+                        value={formState.phone}
+                        onChange={(e) => handleChange("phone", e.target.value)}
+                        placeholder="+61 400 123 456"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-800 text-sm outline-none transition-all focus:border-sky-300 focus:ring-2 focus:ring-sky-100 placeholder:text-slate-300"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      />
+                    </div>
 
-                {/* Message */}
-                <div>
-                  <label
-                    htmlFor="contact-message"
-                    className="block text-sm font-semibold text-gray-700 mb-1.5"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    id="contact-message"
-                    required
-                    rows={4}
-                    value={formState.message}
-                    onChange={(e) => handleChange("message", e.target.value)}
-                    placeholder="Tell us about your transport needs…"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20 resize-y"
-                    style={{ fontFamily: "var(--tp-font-body)" }}
-                  />
-                </div>
+                    {/* Message */}
+                    <div>
+                      <label
+                        htmlFor="contact-message"
+                        className="block text-xs font-medium text-slate-500 mb-1.5 tracking-wide uppercase"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      >
+                        Message
+                      </label>
+                      <textarea
+                        id="contact-message"
+                        required
+                        rows={4}
+                        value={formState.message}
+                        onChange={(e) => handleChange("message", e.target.value)}
+                        placeholder="Tell us about your delivery needs…"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-800 text-sm outline-none transition-all focus:border-sky-300 focus:ring-2 focus:ring-sky-100 resize-y placeholder:text-slate-300"
+                        style={{ fontFamily: "var(--tp-font-body)" }}
+                      />
+                    </div>
 
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-white font-bold text-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:opacity-60 disabled:pointer-events-none"
-                  style={{
-                    backgroundColor: primaryColor,
-                    fontFamily: "var(--tp-font-body)",
-                  }}
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Sending…
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      Send Message
-                    </>
-                  )}
-                </button>
+                    {/* Submit */}
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-white font-medium text-sm transition-all duration-300 hover:shadow-md hover:translate-y-[-1px] disabled:opacity-50 disabled:pointer-events-none"
+                      style={{
+                        backgroundColor: primaryColor,
+                        fontFamily: "var(--tp-font-body)",
+                      }}
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending…
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Send Message
+                        </>
+                      )}
+                    </button>
 
-                {submitError && (
-                  <p className="text-red-600 text-sm font-medium">
-                    {submitError}
-                  </p>
+                    {submitError && (
+                      <p className="text-red-500 text-sm font-medium">
+                        {submitError}
+                      </p>
+                    )}
+                  </form>
                 )}
-              </form>
-            )}
-          </div>
-
-          {/* Contact Info + Map */}
-          <div className="space-y-6">
-            <div className="space-y-4">
-              {content.email && (
-                <div className="flex items-start gap-3">
-                  <div
-                    className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
-                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
-                  >
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Email</p>
-                    <a
-                      href={`mailto:${content.email}`}
-                      className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-                    >
-                      {content.email}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {content.phone && (
-                <div className="flex items-start gap-3">
-                  <div
-                    className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
-                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
-                  >
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Phone</p>
-                    <a
-                      href={`tel:${content.phone}`}
-                      className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-                    >
-                      {content.phone}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {content.address && (
-                <div className="flex items-start gap-3">
-                  <div
-                    className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
-                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
-                  >
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Address</p>
-                    <p className="text-sm text-gray-500">{content.address}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Map embed */}
-            {content.map_embed_url && (
-              <div className="rounded-xl overflow-hidden border border-gray-200 mt-4">
-                <iframe
-                  src={content.map_embed_url}
-                  width="100%"
-                  height="280"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Map"
-                />
               </div>
-            )}
+
+              {/* Contact Info + Map */}
+              <div className="space-y-6">
+                <div className="space-y-5">
+                  {content.email && (
+                    <div className="flex items-start gap-3.5">
+                      <div
+                        className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
+                        style={{ backgroundColor: primaryColor + "10", color: primaryColor }}
+                      >
+                        <Mail className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-0.5">Email</p>
+                        <a
+                          href={`mailto:${content.email}`}
+                          className="text-sm text-slate-600 hover:text-slate-800 transition-colors"
+                          style={{ fontFamily: "var(--tp-font-body)" }}
+                        >
+                          {content.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {content.phone && (
+                    <div className="flex items-start gap-3.5">
+                      <div
+                        className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
+                        style={{ backgroundColor: primaryColor + "10", color: primaryColor }}
+                      >
+                        <Phone className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-0.5">Phone</p>
+                        <a
+                          href={`tel:${content.phone}`}
+                          className="text-sm text-slate-600 hover:text-slate-800 transition-colors"
+                          style={{ fontFamily: "var(--tp-font-body)" }}
+                        >
+                          {content.phone}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {content.address && (
+                    <div className="flex items-start gap-3.5">
+                      <div
+                        className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
+                        style={{ backgroundColor: primaryColor + "10", color: primaryColor }}
+                      >
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-0.5">Address</p>
+                        <p
+                          className="text-sm text-slate-600"
+                          style={{ fontFamily: "var(--tp-font-body)" }}
+                        >
+                          {content.address}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Map embed */}
+                {content.map_embed_url && (
+                  <div className="rounded-xl overflow-hidden border border-slate-100 mt-2">
+                    <iframe
+                      src={content.map_embed_url}
+                      width="100%"
+                      height="220"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Map"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1122,28 +1161,28 @@ function FooterSection({
   primaryColor: string;
 }) {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <footer className="bg-slate-800">
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* Company name + copyright */}
           <div>
             <p
-              className="text-xl font-bold text-white mb-1"
+              className="text-sm font-medium text-white mb-1"
               style={{ fontFamily: "var(--tp-font-heading)" }}
             >
               {content.company_name}
             </p>
-            <p className="text-sm text-gray-500">{content.copyright_text}</p>
+            <p className="text-xs text-slate-500">{content.copyright_text}</p>
           </div>
 
           {/* Links */}
           {content.links && content.links.length > 0 && (
-            <nav className="flex flex-wrap gap-x-6 gap-y-2">
+            <nav className="flex flex-wrap gap-x-5 gap-y-1">
               {content.links.map((link, idx) => (
                 <a
                   key={idx}
                   href={link.url}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className="text-xs text-slate-400 hover:text-white transition-colors"
                   style={{ fontFamily: "var(--tp-font-body)" }}
                 >
                   {link.label}
@@ -1153,10 +1192,10 @@ function FooterSection({
           )}
         </div>
 
-        {/* Bottom accent line */}
+        {/* Thin accent line */}
         <div
-          className="mt-8 h-0.5 w-20 rounded-full"
-          style={{ backgroundColor: primaryColor }}
+          className="mt-6 h-px w-16"
+          style={{ backgroundColor: primaryColor, opacity: 0.4 }}
         />
       </div>
     </footer>
@@ -1198,16 +1237,16 @@ function MobileNav({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed top-4 right-4 z-50 md:hidden h-10 w-10 rounded-lg bg-black/40 backdrop-blur-sm flex items-center justify-center text-white"
+        className="fixed top-4 right-4 z-50 md:hidden h-9 w-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-600 shadow-sm"
         aria-label="Open menu"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-4 w-4" />
       </button>
 
       {/* Overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-sm md:hidden"
           onClick={() => setOpen(false)}
         />
       )}
@@ -1218,18 +1257,18 @@ function MobileNav({
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <span className="font-bold text-gray-900">Menu</span>
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <span className="text-sm font-medium text-slate-800">Menu</span>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600"
             aria-label="Close menu"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-0.5">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -1238,7 +1277,7 @@ function MobileNav({
                 scrollToSection(item.id);
                 setOpen(false);
               }}
-              className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium text-sm transition-colors"
+              className="w-full text-left px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-light text-sm transition-colors"
             >
               {item.label}
             </button>
@@ -1263,7 +1302,7 @@ function DesktopNav({
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 100);
+    const onScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -1286,23 +1325,24 @@ function DesktopNav({
 
   return (
     <nav
-      className={`hidden md:flex fixed top-0 left-0 right-0 z-40 items-center justify-between px-8 h-16 transition-all duration-300 ${
+      className={`hidden md:flex fixed top-0 left-0 right-0 z-40 items-center justify-between px-10 h-14 transition-all duration-300 ${
         scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-sm"
+          ? "bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100"
           : "bg-transparent"
       }`}
     >
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-8">
         {navItems.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => scrollToSection(item.id)}
-            className={`text-sm font-medium transition-colors ${
+            className={`text-xs font-medium tracking-wide transition-colors ${
               scrolled
-                ? "text-gray-700 hover:text-gray-900"
-                : "text-white/80 hover:text-white"
+                ? "text-slate-500 hover:text-slate-800"
+                : "text-slate-600/70 hover:text-slate-800"
             }`}
+            style={{ fontFamily: "var(--tp-font-body)" }}
           >
             {item.label}
           </button>
@@ -1312,8 +1352,8 @@ function DesktopNav({
         <button
           type="button"
           onClick={() => scrollToSection("contact")}
-          className="rounded-lg px-5 py-2 text-sm font-bold text-white transition-all hover:scale-105"
-          style={{ backgroundColor: primaryColor }}
+          className="rounded-full px-5 py-2 text-xs font-medium text-white transition-all hover:shadow-md hover:translate-y-[-1px]"
+          style={{ backgroundColor: primaryColor, fontFamily: "var(--tp-font-body)" }}
         >
           Get a Quote
         </button>
@@ -1428,7 +1468,7 @@ function StatsSection({
 // Main Template Component
 // =============================================================================
 
-export default function HaulierBold(props: TemplateProps) {
+export default function ExpressClean(props: TemplateProps) {
   const {
     siteName,
     config,
@@ -1438,8 +1478,8 @@ export default function HaulierBold(props: TemplateProps) {
     plan,
   } = props;
 
-  const primaryColor = config.primary_color || "#e63946";
-  const secondaryColor = config.secondary_color || "#1d3557";
+  const primaryColor = config.primary_color || "#0ea5e9";
+  const secondaryColor = config.secondary_color || "#0f172a";
 
   const isProOrAbove = plan === "pro" || plan === "premium";
 
@@ -1458,7 +1498,7 @@ export default function HaulierBold(props: TemplateProps) {
             "--tp-font-body": config.font_body || "inherit",
           } as React.CSSProperties
         }
-        className="min-h-screen bg-white text-gray-900 antialiased"
+        className="min-h-screen bg-white text-slate-800 antialiased"
       >
         {/* Navigation */}
         <DesktopNav primaryColor={primaryColor} sections={sections} />

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { addCustomHostname, verifyCustomHostname } from '@/lib/cloudflare'
+import { addCustomHostname, verifyCustomHostname, deleteCustomHostname } from '@/lib/cloudflare'
 
 // -----------------------------------------------------------------------------
 // GET handler — check custom domain verification status
@@ -219,29 +219,134 @@ export async function POST(request: Request) {
       success: true,
       domain: normalizedDomain,
       sslStatus: customHostname.sslStatus,
+      customHostnameId: customHostname.customHostnameId,
       verificationInstructions: {
         method: 'CNAME',
-        record: {
+        cnameRecord: {
           type: 'CNAME',
           name: normalizedDomain,
-          value: `${site.slug}.transitpage.com`,
+          value: 'proxy.transitpage.xyz',
           ttl: 'Auto',
         },
-        alternativeTxtRecord: {
+        txtRecord: {
           type: 'TXT',
           name: `_cf-custom-hostname.${normalizedDomain}`,
           value: customHostname.customHostnameId,
         },
         steps: [
           `1. Log in to your DNS provider for ${normalizedDomain}`,
-          `2. Add a CNAME record pointing ${normalizedDomain} → ${site.slug}.transitpage.com`,
-          `3. Wait for DNS propagation (usually 5-10 minutes, up to 48 hours)`,
-          `4. Check verification status via GET /api/domain?siteId=${siteId}`,
+          `2. Add a CNAME record pointing ${normalizedDomain} → proxy.transitpage.xyz`,
+          `3. Add a TXT record: _cf-custom-hostname.${normalizedDomain} → ${customHostname.customHostnameId}`,
+          `4. Wait for DNS propagation (usually 5-10 minutes, up to 48 hours)`,
+          `5. Click "Verify Domain" to check SSL/provisioning status`,
         ],
       },
     })
   } catch (err: any) {
     console.error('[Domain API POST] Unhandled error:', err)
+    return NextResponse.json(
+      { error: 'Internal server error', details: err.message },
+      { status: 500 }
+    )
+  }
+}
+
+// -----------------------------------------------------------------------------
+// DELETE handler — remove custom domain from a site
+// -----------------------------------------------------------------------------
+
+interface DeleteDomainRequest {
+  siteId: string
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const body: DeleteDomainRequest = await request.json()
+    const { siteId } = body
+
+    if (!siteId) {
+      return NextResponse.json(
+        { error: 'Missing required field: siteId' },
+        { status: 400 }
+      )
+    }
+
+    const admin = createAdminClient()
+
+    // -----------------------------------------------------------------------
+    // Look up site
+    // -----------------------------------------------------------------------
+    const { data: site, error: siteError } = await admin
+      .from('sites')
+      .select('id, user_id, custom_domain, custom_domain_verified, cloudflare_custom_hostname_id')
+      .eq('id', siteId)
+      .single()
+
+    if (siteError || !site) {
+      return NextResponse.json({ error: 'Site not found' }, { status: 404 })
+    }
+
+    // -----------------------------------------------------------------------
+    // Verify the caller owns this site
+    // -----------------------------------------------------------------------
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user || user.id !== site.user_id) {
+      return NextResponse.json(
+        { error: 'You do not have permission to manage this site' },
+        { status: 403 }
+      )
+    }
+
+    if (!site.custom_domain && !site.cloudflare_custom_hostname_id) {
+      return NextResponse.json(
+        { error: 'No custom domain to remove' },
+        { status: 400 }
+      )
+    }
+
+    // -----------------------------------------------------------------------
+    // Delete the custom hostname from Cloudflare
+    // -----------------------------------------------------------------------
+    if (site.cloudflare_custom_hostname_id) {
+      try {
+        await deleteCustomHostname(site.cloudflare_custom_hostname_id)
+      } catch (cfErr: any) {
+        console.error('[Domain API DELETE] Cloudflare delete failed (continuing):', cfErr.message)
+        // Continue even if Cloudflare deletion fails — we still want to clean up our DB
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Clear custom domain fields in the sites table
+    // -----------------------------------------------------------------------
+    const { error: updateError } = await admin
+      .from('sites')
+      .update({
+        custom_domain: null,
+        custom_domain_verified: false,
+        cloudflare_custom_hostname_id: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', siteId)
+
+    if (updateError) {
+      console.error('[Domain API DELETE] Failed to clear site fields:', updateError)
+      return NextResponse.json(
+        { error: 'Failed to remove custom domain from site' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Custom domain removed successfully',
+    })
+  } catch (err: any) {
+    console.error('[Domain API DELETE] Unhandled error:', err)
     return NextResponse.json(
       { error: 'Internal server error', details: err.message },
       { status: 500 }

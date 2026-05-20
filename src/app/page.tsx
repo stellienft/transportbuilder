@@ -213,34 +213,34 @@ export default function Home() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
   return (
-    <div className="min-h-screen bg-[#0a0f1c] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white text-gray-700 overflow-x-hidden">
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-[#0a0f1c]/80 border-b border-white/5">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-sm font-bold tracking-tight">
+            <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center text-sm font-bold tracking-tight text-white">
               TB
             </div>
-            <span className="text-lg font-semibold tracking-tight">
-              Transport<span className="text-blue-400">Builder</span>
+            <span className="text-lg font-heading font-bold tracking-tight text-gray-900">
+              Transport<span className="text-gray-500">Builder</span>
             </span>
           </Link>
-          <div className="hidden md:flex items-center gap-8 text-sm text-slate-400">
-            <a href="#features" className="hover:text-white transition">Features</a>
-            <a href="#how-it-works" className="hover:text-white transition">How It Works</a>
-            <a href="#pricing" className="hover:text-white transition">Pricing</a>
-            <a href="#testimonials" className="hover:text-white transition">Reviews</a>
+          <div className="hidden md:flex items-center gap-8 text-sm text-gray-500">
+            <a href="#features" className="hover:text-gray-900 transition">Features</a>
+            <a href="#how-it-works" className="hover:text-gray-900 transition">How It Works</a>
+            <a href="#pricing" className="hover:text-gray-900 transition">Pricing</a>
+            <a href="#testimonials" className="hover:text-gray-900 transition">Reviews</a>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm text-slate-400 hover:text-white transition hidden sm:block"
+              className="text-sm text-gray-500 hover:text-gray-900 transition hidden sm:block"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="text-sm font-medium bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg transition"
+              className="text-sm font-medium bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
             >
               Get Started
             </Link>
@@ -250,42 +250,30 @@ export default function Home() {
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <section className="relative pt-32 pb-20 md:pt-44 md:pb-32">
-        {/* Background gradient blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-blue-500/10 rounded-full blur-[120px]" />
-          <div className="absolute top-20 right-0 w-[400px] h-[400px] bg-violet-500/8 rounded-full blur-[100px]" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-sm text-slate-300 mb-8">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            Now in early access
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-heading font-bold tracking-tight leading-[1.1] max-w-4xl mx-auto text-gray-900">
             Your transport company
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-blue-400 bg-clip-text text-transparent">
+            <span className="text-gray-400">
               deserves a better website
             </span>
           </h1>
 
-          <p className="mt-6 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
             Pick a template, customise your content, connect your domain. Go live in minutes — no developer needed. Built specifically for transport &amp; logistics companies.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-4 rounded-xl text-lg transition shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
+              className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-8 py-4 rounded-xl text-lg transition"
             >
               Start Building Free
               <ArrowRightIcon className="w-5 h-5" />
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white font-medium px-6 py-4 rounded-xl text-lg transition border border-white/10 hover:border-white/20"
+              className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 font-medium px-6 py-4 rounded-xl text-lg transition border border-gray-300 hover:border-gray-400"
             >
               See How It Works
             </a>
@@ -293,33 +281,32 @@ export default function Home() {
 
           {/* Hero visual — mockup */}
           <div className="mt-16 md:mt-24 relative mx-auto max-w-5xl">
-            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-blue-500/20 rounded-2xl blur-2xl" />
-            <div className="relative rounded-xl border border-white/10 bg-[#111827] overflow-hidden shadow-2xl">
+            <div className="relative rounded-xl border border-gray-200 bg-gray-50 overflow-hidden shadow-lg">
               {/* Browser chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 bg-white">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                  <div className="w-3 h-3 rounded-full bg-red-400" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                  <div className="w-3 h-3 rounded-full bg-green-400" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="bg-white/5 rounded-md px-4 py-1 text-xs text-slate-500 font-mono">
+                  <div className="bg-gray-100 rounded-md px-4 py-1 text-xs text-gray-400 font-mono">
                     yourcompany.transportbuilder.xyz
                   </div>
                 </div>
               </div>
               {/* Mockup content */}
-              <div className="aspect-[16/9] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+              <div className="aspect-[16/9] bg-white flex items-center justify-center">
                 <div className="text-center space-y-4 px-8">
-                  <TruckIcon className="w-16 h-16 text-blue-400/40 mx-auto" />
+                  <TruckIcon className="w-16 h-16 text-gray-300 mx-auto" />
                   <div className="space-y-2">
-                    <div className="h-4 w-48 bg-white/10 rounded mx-auto" />
-                    <div className="h-3 w-64 bg-white/5 rounded mx-auto" />
-                    <div className="h-3 w-40 bg-white/5 rounded mx-auto" />
+                    <div className="h-4 w-48 bg-gray-200 rounded mx-auto" />
+                    <div className="h-3 w-64 bg-gray-100 rounded mx-auto" />
+                    <div className="h-3 w-40 bg-gray-100 rounded mx-auto" />
                   </div>
                   <div className="flex gap-3 justify-center pt-2">
-                    <div className="h-10 w-32 bg-blue-600/30 rounded-lg" />
-                    <div className="h-10 w-32 bg-white/5 rounded-lg" />
+                    <div className="h-10 w-32 bg-gray-900 rounded-lg" />
+                    <div className="h-10 w-32 bg-gray-100 rounded-lg" />
                   </div>
                 </div>
               </div>
@@ -329,15 +316,15 @@ export default function Home() {
       </section>
 
       {/* ── Social proof bar ────────────────────────────────────────────────── */}
-      <section className="py-12 border-y border-white/5">
+      <section className="py-12 border-y border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-sm text-slate-500 mb-6 uppercase tracking-widest">
+          <p className="text-center text-sm text-gray-400 mb-6 uppercase tracking-widest">
             Trusted by transport companies across Australia
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-4 text-slate-600">
+          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-4 text-gray-300">
             {["Eastside Haulage", "Metro Freight", "Mick's Transport", "Coastal Carriers", "Redline Logistics"].map(
               (name) => (
-                <span key={name} className="text-lg font-semibold tracking-tight opacity-40 hover:opacity-60 transition">
+                <span key={name} className="text-lg font-heading font-semibold tracking-tight hover:text-gray-500 transition">
                   {name}
                 </span>
               )
@@ -350,11 +337,11 @@ export default function Home() {
       <section id="features" className="py-20 md:py-32">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-sm font-medium text-blue-400 uppercase tracking-widest mb-3">Features</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-3">Features</p>
+            <h2 className="text-3xl md:text-5xl font-heading font-bold tracking-tight text-gray-900">
               Everything your transport site needs
             </h2>
-            <p className="mt-4 text-lg text-slate-400">
+            <p className="mt-4 text-lg text-gray-500">
               Purpose-built for the transport industry — not a generic website builder with transport bolted on.
             </p>
           </div>
@@ -363,13 +350,13 @@ export default function Home() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group relative p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 transition"
+                className="group p-6 rounded-2xl border border-gray-200 bg-white hover:shadow-md transition"
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center text-blue-400 mb-4 group-hover:from-blue-500/30 group-hover:to-violet-500/30 transition">
+                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 mb-4 group-hover:bg-gray-200 transition">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg font-heading font-bold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -377,11 +364,11 @@ export default function Home() {
       </section>
 
       {/* ── How It Works ────────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="py-20 md:py-32 border-y border-white/5">
+      <section id="how-it-works" className="py-20 md:py-32 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-sm font-medium text-blue-400 uppercase tracking-widest mb-3">How It Works</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-3">How It Works</p>
+            <h2 className="text-3xl md:text-5xl font-heading font-bold tracking-tight text-gray-900">
               Live in three steps
             </h2>
           </div>
@@ -389,13 +376,13 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {steps.map((step) => (
               <div key={step.number} className="relative text-center md:text-left">
-                <span className="text-6xl font-bold bg-gradient-to-b from-blue-500/30 to-transparent bg-clip-text text-transparent">
+                <span className="text-6xl font-heading font-bold text-gray-200">
                   {step.number}
                 </span>
-                <h3 className="text-xl font-semibold mt-4 mb-2">{step.title}</h3>
-                <p className="text-slate-400 leading-relaxed">{step.description}</p>
+                <h3 className="text-xl font-heading font-bold text-gray-900 mt-4 mb-2">{step.title}</h3>
+                <p className="text-gray-500 leading-relaxed">{step.description}</p>
                 {step.number !== "03" && (
-                  <div className="hidden md:block absolute top-8 -right-6 w-12 text-slate-700">
+                  <div className="hidden md:block absolute top-8 -right-6 w-12 text-gray-300">
                     <ArrowRightIcon className="w-6 h-6" />
                   </div>
                 )}
@@ -410,11 +397,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-sm font-medium text-blue-400 uppercase tracking-widest mb-3">Pro Feature</p>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+              <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-3">Pro Feature</p>
+              <h2 className="text-3xl md:text-5xl font-heading font-bold tracking-tight text-gray-900">
                 Rate calculator that works while you sleep
               </h2>
-              <p className="mt-4 text-lg text-slate-400 leading-relaxed">
+              <p className="mt-4 text-lg text-gray-500 leading-relaxed">
                 Customers enter their pickup and delivery postcode. Mapbox calculates the distance, your rate table generates the price, and the quote gets emailed to both of you — instantly.
               </p>
               <ul className="mt-8 space-y-3">
@@ -424,8 +411,8 @@ export default function Home() {
                   "Instant quote emails to you and your customer",
                   "Lead capture built right in",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-slate-300">
-                    <CheckIcon className="w-5 h-5 text-green-400 shrink-0" />
+                  <li key={item} className="flex items-center gap-3 text-gray-700">
+                    <CheckIcon className="w-5 h-5 text-gray-900 shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -433,7 +420,7 @@ export default function Home() {
               <div className="mt-8">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition"
+                  className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded-xl transition"
                 >
                   Start with Pro
                   <ArrowRightIcon className="w-5 h-5" />
@@ -441,31 +428,30 @@ export default function Home() {
               </div>
             </div>
             <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-violet-500/10 to-blue-500/10 rounded-2xl blur-xl" />
-              <div className="relative rounded-2xl border border-white/10 bg-[#111827] p-6 md:p-8">
-                <h3 className="text-sm font-medium text-slate-400 mb-6">Instant Rate Calculator</h3>
+              <div className="relative rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
+                <h3 className="text-sm font-medium text-gray-500 mb-6">Instant Rate Calculator</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs text-slate-500 mb-1.5 block">Pickup Location</label>
-                    <div className="h-11 bg-white/5 border border-white/10 rounded-lg px-4 flex items-center text-slate-400 text-sm">
+                    <label className="text-xs text-gray-400 mb-1.5 block">Pickup Location</label>
+                    <div className="h-11 bg-gray-50 border border-gray-200 rounded-lg px-4 flex items-center text-gray-500 text-sm">
                       Brisbane, QLD 4000
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-slate-500 mb-1.5 block">Delivery Location</label>
-                    <div className="h-11 bg-white/5 border border-white/10 rounded-lg px-4 flex items-center text-slate-400 text-sm">
+                    <label className="text-xs text-gray-400 mb-1.5 block">Delivery Location</label>
+                    <div className="h-11 bg-gray-50 border border-gray-200 rounded-lg px-4 flex items-center text-gray-500 text-sm">
                       Sydney, NSW 2000
                     </div>
                   </div>
-                  <div className="h-11 bg-blue-600/20 border border-blue-500/30 rounded-lg px-4 flex items-center justify-center text-blue-300 text-sm font-medium">
+                  <div className="h-11 bg-gray-100 border border-gray-300 rounded-lg px-4 flex items-center justify-center text-gray-700 text-sm font-medium">
                     Distance: 914 km
                   </div>
-                  <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-4">
-                    <p className="text-sm text-green-400 font-medium">Estimated Rate</p>
-                    <p className="text-3xl font-bold text-green-300 mt-1">$1,371.00</p>
-                    <p className="text-xs text-slate-500 mt-1">Based on $1.50/km standard rate</p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm text-gray-500 font-medium">Estimated Rate</p>
+                    <p className="text-3xl font-heading font-bold text-gray-900 mt-1">$1,371.00</p>
+                    <p className="text-xs text-gray-400 mt-1">Based on $1.50/km standard rate</p>
                   </div>
-                  <div className="h-11 bg-blue-600 hover:bg-blue-500 rounded-lg flex items-center justify-center text-sm font-semibold transition">
+                  <div className="h-11 bg-gray-900 hover:bg-gray-800 rounded-lg flex items-center justify-center text-sm font-semibold text-white transition">
                     Get Quote via Email
                   </div>
                 </div>
@@ -476,31 +462,31 @@ export default function Home() {
       </section>
 
       {/* ── Pricing ─────────────────────────────────────────────────────────── */}
-      <section id="pricing" className="py-20 md:py-32 border-y border-white/5">
+      <section id="pricing" className="py-20 md:py-32 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <p className="text-sm font-medium text-blue-400 uppercase tracking-widest mb-3">Pricing</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-3">Pricing</p>
+            <h2 className="text-3xl md:text-5xl font-heading font-bold tracking-tight text-gray-900">
               Simple, transparent pricing
             </h2>
-            <p className="mt-4 text-lg text-slate-400">
+            <p className="mt-4 text-lg text-gray-500">
               Start free. Upgrade when you need the calculator and custom domain.
             </p>
           </div>
 
           {/* Billing toggle */}
           <div className="flex items-center justify-center gap-3 mb-12">
-            <span className={`text-sm ${billing === "monthly" ? "text-white" : "text-slate-500"}`}>Monthly</span>
+            <span className={`text-sm ${billing === "monthly" ? "text-gray-900" : "text-gray-400"}`}>Monthly</span>
             <button
               onClick={() => setBilling(billing === "monthly" ? "yearly" : "monthly")}
-              className="relative w-12 h-6 rounded-full bg-white/10 transition"
+              className="relative w-12 h-6 rounded-full bg-gray-200 transition"
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-blue-500 transition-transform ${billing === "yearly" ? "translate-x-6" : ""}`}
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-gray-900 transition-transform ${billing === "yearly" ? "translate-x-6" : ""}`}
               />
             </button>
-            <span className={`text-sm ${billing === "yearly" ? "text-white" : "text-slate-500"}`}>
-              Yearly <span className="text-green-400 text-xs font-medium ml-1">Save 20%</span>
+            <span className={`text-sm ${billing === "yearly" ? "text-gray-900" : "text-gray-400"}`}>
+              Yearly <span className="text-gray-500 text-xs font-medium ml-1">Save 20%</span>
             </span>
           </div>
 
@@ -512,28 +498,28 @@ export default function Home() {
                   key={plan.name}
                   className={`relative rounded-2xl p-6 md:p-8 ${
                     plan.highlighted
-                      ? "border-2 border-blue-500/50 bg-blue-500/[0.05] shadow-lg shadow-blue-500/10"
-                      : "border border-white/5 bg-white/[0.02]"
+                      ? "border-2 border-gray-900 bg-white shadow-lg"
+                      : "border border-gray-200 bg-white shadow-sm"
                   }`}
                 >
                   {plan.highlighted && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-xs font-semibold px-3 py-1 rounded-full">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-xs font-semibold px-3 py-1 rounded-full text-white">
                       Most Popular
                     </div>
                   )}
-                  <h3 className="text-lg font-semibold">{plan.name}</h3>
-                  <p className="text-sm text-slate-400 mt-1">{plan.description}</p>
+                  <h3 className="text-lg font-heading font-bold text-gray-900">{plan.name}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
                   <div className="mt-6 mb-6">
-                    <span className="text-4xl font-bold">${price}</span>
-                    <span className="text-slate-400">/mo</span>
+                    <span className="text-4xl font-heading font-bold text-gray-900">${price}</span>
+                    <span className="text-gray-400">/mo</span>
                     {billing === "yearly" && (
-                      <p className="text-xs text-slate-500 mt-1">Billed annually (${price * 12}/yr)</p>
+                      <p className="text-xs text-gray-400 mt-1">Billed annually (${price * 12}/yr)</p>
                     )}
                   </div>
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm text-slate-300">
-                        <CheckIcon className={`w-4 h-4 shrink-0 ${plan.highlighted ? "text-blue-400" : "text-green-400"}`} />
+                      <li key={feature} className="flex items-center gap-3 text-sm text-gray-700">
+                        <CheckIcon className={`w-4 h-4 shrink-0 text-gray-900`} />
                         {feature}
                       </li>
                     ))}
@@ -542,8 +528,8 @@ export default function Home() {
                     href="/signup"
                     className={`block text-center py-3 rounded-xl font-semibold text-sm transition ${
                       plan.highlighted
-                        ? "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                        : "bg-white/5 hover:bg-white/10 text-white border border-white/10"
+                        ? "bg-gray-900 hover:bg-gray-800 text-white"
+                        : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-gray-400"
                     }`}
                   >
                     {plan.cta}
@@ -559,8 +545,8 @@ export default function Home() {
       <section id="testimonials" className="py-20 md:py-32">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-sm font-medium text-blue-400 uppercase tracking-widest mb-3">Testimonials</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-3">Testimonials</p>
+            <h2 className="text-3xl md:text-5xl font-heading font-bold tracking-tight text-gray-900">
               Loved by transport operators
             </h2>
           </div>
@@ -569,17 +555,17 @@ export default function Home() {
             {testimonials.map((t) => (
               <div
                 key={t.author}
-                className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]"
+                className="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm"
               >
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <StarIcon key={i} className="w-4 h-4 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-slate-300 leading-relaxed mb-6">&ldquo;{t.quote}&rdquo;</p>
+                <p className="text-gray-700 leading-relaxed mb-6">&ldquo;{t.quote}&rdquo;</p>
                 <div>
-                  <p className="font-semibold text-sm">{t.author}</p>
-                  <p className="text-sm text-slate-500">{t.company}</p>
+                  <p className="font-heading font-bold text-sm text-gray-900">{t.author}</p>
+                  <p className="text-sm text-gray-400">{t.company}</p>
                 </div>
               </div>
             ))}
@@ -588,11 +574,11 @@ export default function Home() {
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────────────────────── */}
-      <section className="py-20 md:py-32 border-y border-white/5">
+      <section className="py-20 md:py-32 bg-gray-50">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
-            <p className="text-sm font-medium text-blue-400 uppercase tracking-widest mb-3">FAQ</p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Common questions</h2>
+            <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-3">FAQ</p>
+            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-gray-900">Common questions</h2>
           </div>
 
           <div className="space-y-6">
@@ -619,8 +605,8 @@ export default function Home() {
               },
             ].map((faq) => (
               <div key={faq.q} className="space-y-3">
-                <h3 className="text-lg font-semibold">{faq.q}</h3>
-                <p className="text-slate-400 leading-relaxed">{faq.a}</p>
+                <h3 className="text-lg font-heading font-bold text-gray-900">{faq.q}</h3>
+                <p className="text-gray-500 leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
@@ -630,16 +616,16 @@ export default function Home() {
       {/* ── CTA ─────────────────────────────────────────────────────────────── */}
       <section className="py-20 md:py-32">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-heading font-bold tracking-tight text-gray-900">
             Ready to get your transport company online?
           </h2>
-          <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-gray-500 max-w-2xl mx-auto">
             Start building your professional transport website today. No credit card required.
           </p>
           <div className="mt-10">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-4 rounded-xl text-lg transition shadow-lg shadow-blue-500/20"
+              className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-8 py-4 rounded-xl text-lg transition"
             >
               Start Building Free
               <ArrowRightIcon className="w-5 h-5" />
@@ -649,24 +635,24 @@ export default function Home() {
       </section>
 
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/5 py-12">
+      <footer className="border-t border-gray-200 bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-xs font-bold">
+              <div className="w-7 h-7 rounded-md bg-gray-900 flex items-center justify-center text-xs font-bold text-white">
                 TB
               </div>
-              <span className="text-sm font-semibold">
-                Transport<span className="text-blue-400">Builder</span>
+              <span className="text-sm font-heading font-bold text-gray-900">
+                Transport<span className="text-gray-400">Builder</span>
               </span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-slate-500">
-              <a href="#features" className="hover:text-white transition">Features</a>
-              <a href="#pricing" className="hover:text-white transition">Pricing</a>
-              <a href="#" className="hover:text-white transition">Privacy</a>
-              <a href="#" className="hover:text-white transition">Terms</a>
+            <div className="flex items-center gap-6 text-sm text-gray-400">
+              <a href="#features" className="hover:text-gray-900 transition">Features</a>
+              <a href="#pricing" className="hover:text-gray-900 transition">Pricing</a>
+              <a href="#" className="hover:text-gray-900 transition">Privacy</a>
+              <a href="#" className="hover:text-gray-900 transition">Terms</a>
             </div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-gray-400">
               &copy; {new Date().getFullYear()} Transport Builder. A product of ArcLink.
             </p>
           </div>

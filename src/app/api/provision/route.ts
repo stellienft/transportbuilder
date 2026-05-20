@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { createDroplet, waitForDropletActive } from '@/lib/digitalocean'
-import { createDnsRecord, addCustomHostname } from '@/lib/cloudflare'
+import { createDroplet, waitForDropletActive, deleteDroplet } from '@/lib/digitalocean'
+import { createDnsRecord, addCustomHostname, deleteDnsRecord, deleteCustomHostname } from '@/lib/cloudflare'
 
 // -----------------------------------------------------------------------------
 // Request type
@@ -158,6 +158,134 @@ export async function POST(request: Request) {
     })
   } catch (err: any) {
     console.error('[Provision API] Unhandled error:', err)
+    return NextResponse.json(
+      { error: 'Internal server error', details: err.message },
+      { status: 500 }
+    )
+  }
+}
+
+// -----------------------------------------------------------------------------
+// DELETE handler — deprovision a DO droplet + Cloudflare DNS for a site
+// -----------------------------------------------------------------------------
+
+interface DeprovisionRequest {
+  siteId: string
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const body: DeprovisionRequest = await request.json()
+    const { siteId } = body
+
+    if (!siteId) {
+      return NextResponse.json(
+        { error: 'Missing required field: siteId' },
+        { status: 400 }
+      )
+    }
+
+    const admin = createAdminClient()
+
+    // -----------------------------------------------------------------------
+    // Look up site
+    // -----------------------------------------------------------------------
+    const { data: site, error: siteError } = await admin
+      .from('sites')
+      .select('id, user_id, slug, droplet_id, droplet_ip, cloudflare_dns_id, cloudflare_custom_hostname_id')
+      .eq('id', siteId)
+      .single()
+
+    if (siteError || !site) {
+      return NextResponse.json({ error: 'Site not found' }, { status: 404 })
+    }
+
+    // -----------------------------------------------------------------------
+    // Verify the caller owns this site
+    // -----------------------------------------------------------------------
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user || user.id !== site.user_id) {
+      return NextResponse.json(
+        { error: 'You do not have permission to deprovision this site' },
+        { status: 403 }
+      )
+    }
+
+    // -----------------------------------------------------------------------
+    // Not provisioned — nothing to do
+    // -----------------------------------------------------------------------
+    if (!site.droplet_id) {
+      return NextResponse.json(
+        { error: 'Site is not provisioned' },
+        { status: 400 }
+      )
+    }
+
+    // -----------------------------------------------------------------------
+    // Delete Cloudflare DNS record
+    // -----------------------------------------------------------------------
+    if (site.cloudflare_dns_id) {
+      try {
+        await deleteDnsRecord(site.cloudflare_dns_id)
+      } catch (err: any) {
+        console.error('[Deprovision] Failed to delete DNS record (non-fatal):', err.message)
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Delete Cloudflare custom hostname if present
+    // -----------------------------------------------------------------------
+    if (site.cloudflare_custom_hostname_id) {
+      try {
+        await deleteCustomHostname(site.cloudflare_custom_hostname_id)
+      } catch (err: any) {
+        console.error('[Deprovision] Failed to delete custom hostname (non-fatal):', err.message)
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Delete DO droplet
+    // -----------------------------------------------------------------------
+    try {
+      await deleteDroplet(site.droplet_id)
+    } catch (err: any) {
+      console.error('[Deprovision] Failed to delete droplet:', err.message)
+      return NextResponse.json(
+        { error: 'Failed to delete droplet', details: err.message },
+        { status: 500 }
+      )
+    }
+
+    // -----------------------------------------------------------------------
+    // Clear site infrastructure fields
+    // -----------------------------------------------------------------------
+    const { error: updateError } = await admin
+      .from('sites')
+      .update({
+        droplet_id: null,
+        droplet_ip: null,
+        cloudflare_dns_id: null,
+        cloudflare_custom_hostname_id: null,
+        is_published: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', siteId)
+
+    if (updateError) {
+      console.error('[Deprovision] Failed to update site:', updateError)
+      return NextResponse.json(
+        { error: 'Failed to update site after deprovisioning' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (err: any) {
+    console.error('[Deprovision API] Unhandled error:', err)
     return NextResponse.json(
       { error: 'Internal server error', details: err.message },
       { status: 500 }

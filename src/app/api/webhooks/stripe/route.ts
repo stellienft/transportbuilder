@@ -9,7 +9,65 @@ import { createDnsRecord, deleteDnsRecord } from '@/lib/cloudflare'
 // -----------------------------------------------------------------------------
 
 function getStripe(): Stripe {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!)
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) throw new Error('STRIPE_SECRET_KEY not configured')
+  return new Stripe(key)
+}
+
+// -----------------------------------------------------------------------------
+// Idempotency: track processed events to prevent double-handling
+// In production, use Redis or a DB table. Here we use an in-memory set
+// with a TTL window (events expire after 1 hour).
+// -----------------------------------------------------------------------------
+
+const processedEvents = new Map<string, number>()
+const EVENT_TTL_MS = 60 * 60 * 1000 // 1 hour
+
+function isDuplicate(eventId: string): boolean {
+  // Prune old entries
+  const now = Date.now()
+  for (const [id, ts] of processedEvents) {
+    if (now - ts > EVENT_TTL_MS) processedEvents.delete(id)
+  }
+  if (processedEvents.has(eventId)) return true
+  processedEvents.set(eventId, now)
+  return false
+}
+
+// -----------------------------------------------------------------------------
+// Retry helper with bounded exponential backoff
+// -----------------------------------------------------------------------------
+
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  baseDelayMs = 500
+): Promise<T> {
+  let lastErr: Error | null = null
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn()
+    } catch (err: any) {
+      lastErr = err
+      if (attempt < maxAttempts) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1)
+        await new Promise(r => setTimeout(r, delay))
+      }
+    }
+  }
+  throw lastErr
+}
+
+// -----------------------------------------------------------------------------
+// Failure classifier — infra vs quality
+// -----------------------------------------------------------------------------
+
+function classifyError(err: any): 'infra' | 'quality' {
+  const msg = (err?.message || '').toLowerCase()
+  if (msg.includes('timeout') || msg.includes('econnrefused') || msg.includes('network') || msg.includes('5')) {
+    return 'infra'
+  }
+  return 'quality'
 }
 
 // -----------------------------------------------------------------------------
@@ -49,6 +107,12 @@ export async function POST(request: Request) {
     )
   }
 
+  // ── Idempotency check ────────────────────────────────────────────────────
+  if (isDuplicate(event.id)) {
+    console.log(`[Stripe Webhook] Duplicate event ${event.id}, skipping`)
+    return NextResponse.json({ received: true })
+  }
+
   const supabase = createAdminClient()
 
   try {
@@ -62,13 +126,12 @@ export async function POST(request: Request) {
         const subscriptionId = session.subscription as string
         const metadata = session.metadata ?? {}
 
-        // metadata should contain site_id and user_id (set during checkout)
         const siteId = metadata.site_id
         const userId = metadata.user_id
         const plan = (metadata.plan ?? 'pro') as 'pro' | 'premium'
 
         if (!siteId || !userId) {
-          console.error('[Stripe Webhook] Missing site_id or user_id in session metadata', { session })
+          console.error('[Stripe Webhook] Missing site_id or user_id in session metadata', { sessionId: session.id })
           break
         }
 
@@ -77,8 +140,8 @@ export async function POST(request: Request) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
         const priceId = subscription.items.data[0]?.price.id ?? null
 
-        // Create or update subscription record
-        await supabase.from('subscriptions').upsert(
+        // Create or update subscription record (idempotent upsert)
+        const { error: subErr } = await supabase.from('subscriptions').upsert(
           {
             user_id: userId,
             site_id: siteId,
@@ -93,8 +156,12 @@ export async function POST(request: Request) {
           },
           { onConflict: 'stripe_subscription_id' }
         )
+        if (subErr) {
+          console.error('[Stripe Webhook] Subscription upsert failed:', subErr.message)
+          break
+        }
 
-        // Provision DO droplet
+        // Provision DO droplet (only if not already provisioned)
         const { data: site } = await supabase
           .from('sites')
           .select('slug, droplet_id')
@@ -103,14 +170,14 @@ export async function POST(request: Request) {
 
         if (site && !site.droplet_id) {
           try {
-            const droplet = await createDroplet(site.slug, siteId, plan)
-            const dropletIp = await waitForDropletActive(droplet.dropletId)
+            const droplet = await retryWithBackoff(() => createDroplet(site.slug, siteId, plan))
+            const dropletIp = await retryWithBackoff(() => waitForDropletActive(droplet.dropletId))
 
             // Create Cloudflare DNS record
-            const dnsRecord = await createDnsRecord(site.slug, dropletIp)
+            const dnsRecord = await retryWithBackoff(() => createDnsRecord(site.slug, dropletIp))
 
-            // Update site with droplet info
-            await supabase
+            // Update site with droplet info (atomic)
+            const { error: updateErr } = await supabase
               .from('sites')
               .update({
                 droplet_id: droplet.dropletId,
@@ -118,8 +185,13 @@ export async function POST(request: Request) {
                 cloudflare_dns_id: dnsRecord.dnsRecordId,
               })
               .eq('id', siteId)
+            if (updateErr) {
+              console.error('[Stripe Webhook] Site update failed after provision:', updateErr.message)
+            }
           } catch (provisionErr: any) {
-            console.error('[Stripe Webhook] Droplet provisioning failed (non-fatal for webhook):', provisionErr.message)
+            const errType = classifyError(provisionErr)
+            console.error(`[Stripe Webhook] Droplet provisioning failed (${errType}):`, provisionErr.message)
+            // Don't fail the webhook — subscription is active, provision can be retried
           }
         }
 
@@ -134,7 +206,6 @@ export async function POST(request: Request) {
         const subscription = event.data.object as Stripe.Subscription
         const subscriptionId = subscription.id
 
-        // Look up existing subscription record
         const { data: existing } = await supabase
           .from('subscriptions')
           .select('id, site_id')
@@ -146,10 +217,8 @@ export async function POST(request: Request) {
           break
         }
 
-        // Determine plan from price ID
         const priceId = subscription.items.data[0]?.price.id ?? null
 
-        // Map price to plan — you can customise this logic
         let plan: 'starter' | 'pro' | 'premium' = 'pro'
         const PRO_PRICE_ID = process.env.STRIPE_PRO_PRICE_ID
         const PREMIUM_PRICE_ID = process.env.STRIPE_PREMIUM_PRICE_ID
@@ -159,13 +228,12 @@ export async function POST(request: Request) {
           plan = 'pro'
         }
 
-        // Determine status from Stripe subscription status
         const status = subscription.status === 'active' ? 'active' :
                        subscription.status === 'trialing' ? 'active' :
                        subscription.status === 'past_due' ? 'past_due' :
                        subscription.status
 
-        await supabase
+        const { error: updErr } = await supabase
           .from('subscriptions')
           .update({
             plan,
@@ -176,6 +244,9 @@ export async function POST(request: Request) {
             cancel_at_period_end: (subscription as any).cancel_at_period_end,
           })
           .eq('id', existing.id)
+        if (updErr) {
+          console.error('[Stripe Webhook] Subscription update failed:', updErr.message)
+        }
 
         console.log(`[Stripe Webhook] customer.subscription.updated — site ${existing.site_id} now on ${plan} plan, status=${status}`)
         break
@@ -199,8 +270,7 @@ export async function POST(request: Request) {
           break
         }
 
-        // Mark subscription as cancelled
-        await supabase
+        const { error: cancelErr } = await supabase
           .from('subscriptions')
           .update({
             status: 'cancelled',
@@ -208,6 +278,9 @@ export async function POST(request: Request) {
             cancel_at_period_end: false,
           })
           .eq('id', existing.id)
+        if (cancelErr) {
+          console.error('[Stripe Webhook] Subscription cancel failed:', cancelErr.message)
+        }
 
         // Optionally tear down droplet
         const { data: site } = await supabase
@@ -218,7 +291,6 @@ export async function POST(request: Request) {
 
         if (site?.droplet_id) {
           try {
-            // Delete Cloudflare DNS record if available
             const { data: siteFull } = await supabase
               .from('sites')
               .select('cloudflare_dns_id')
@@ -231,10 +303,11 @@ export async function POST(request: Request) {
 
             await deleteDroplet(site.droplet_id)
           } catch (teardownErr: any) {
-            console.error('[Stripe Webhook] Teardown failed (non-fatal):', teardownErr.message)
+            const errType = classifyError(teardownErr)
+            console.error(`[Stripe Webhook] Teardown failed (${errType}):`, teardownErr.message)
           }
 
-          await supabase
+          const { error: siteUpdErr } = await supabase
             .from('sites')
             .update({
               is_published: false,
@@ -243,6 +316,9 @@ export async function POST(request: Request) {
               cloudflare_dns_id: null,
             })
             .eq('id', existing.site_id)
+          if (siteUpdErr) {
+            console.error('[Stripe Webhook] Site deprovision update failed:', siteUpdErr.message)
+          }
         }
 
         console.log(`[Stripe Webhook] customer.subscription.deleted — site ${existing.site_id} subscription cancelled`)
@@ -272,10 +348,13 @@ export async function POST(request: Request) {
           break
         }
 
-        await supabase
+        const { error: pdErr } = await supabase
           .from('subscriptions')
           .update({ status: 'past_due' })
           .eq('id', existing.id)
+        if (pdErr) {
+          console.error('[Stripe Webhook] Past-due update failed:', pdErr.message)
+        }
 
         console.log(`[Stripe Webhook] invoice.payment_failed — site ${existing.site_id} marked past_due`)
         break
@@ -285,11 +364,15 @@ export async function POST(request: Request) {
         console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`)
     }
   } catch (err: any) {
-    console.error('[Stripe Webhook] Error processing event:', err)
-    return NextResponse.json(
-      { error: 'Webhook processing error' },
-      { status: 500 }
-    )
+    const errType = classifyError(err)
+    console.error(`[Stripe Webhook] Error processing event (${errType}):`, err)
+    // Return 500 only for infra errors so Stripe retries; quality errors are acknowledged
+    if (errType === 'infra') {
+      return NextResponse.json(
+        { error: 'Temporary processing error' },
+        { status: 500 }
+      )
+    }
   }
 
   return NextResponse.json({ received: true })

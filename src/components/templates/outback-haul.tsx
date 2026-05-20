@@ -19,10 +19,12 @@ import {
   X,
   ArrowRight,
   CheckCircle,
+  Map,
+  Calendar,
 } from "lucide-react";
 
 // =============================================================================
-// Types
+// Types (identical to haulier-bold.tsx)
 // =============================================================================
 
 interface TemplateProps {
@@ -165,13 +167,11 @@ function GoogleAnalytics({ ga4Id }: { ga4Id: string }) {
   useEffect(() => {
     if (!ga4Id || typeof window === "undefined") return;
 
-    // Inject gtag script
     const script = document.createElement("script");
     script.src = `https://www.googletagmanager.com/gtag/js?id=${ga4Id}`;
     script.async = true;
     document.head.appendChild(script);
 
-    // Inject gtag init
     const inline = document.createElement("script");
     inline.innerHTML = `
       window.dataLayer = window.dataLayer || [];
@@ -194,7 +194,7 @@ function GoogleAnalytics({ ga4Id }: { ga4Id: string }) {
 // Star Rating
 // =============================================================================
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating, accentColor }: { rating: number; accentColor?: string }) {
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: 5 }, (_, i) => (
@@ -202,9 +202,16 @@ function StarRating({ rating }: { rating: number }) {
           key={i}
           className={`h-4 w-4 ${
             i < rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "fill-gray-200 text-gray-200"
+              ? accentColor
+                ? ""
+                : "fill-amber-400 text-amber-400"
+              : "fill-gray-300 text-gray-300"
           }`}
+          style={
+            i < rating && accentColor
+              ? { color: accentColor, fill: accentColor }
+              : undefined
+          }
         />
       ))}
     </div>
@@ -212,17 +219,19 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // =============================================================================
-// Hero Section
+// Hero Section — Full-bleed outback road image with warm orange overlay
 // =============================================================================
 
 function HeroSection({
   content,
   primaryColor,
+  secondaryColor,
   logoUrl,
   siteName,
 }: {
   content: TemplateProps["sections"]["hero"]["content"];
   primaryColor: string;
+  secondaryColor: string;
   logoUrl: string;
   siteName: string;
 }) {
@@ -231,7 +240,6 @@ function HeroSection({
   const hasImages = images.length > 0;
   const hasMultiple = images.length > 1;
 
-  // Auto-rotate carousel
   useEffect(() => {
     if (!hasMultiple) return;
     const interval = setInterval(() => {
@@ -244,9 +252,9 @@ function HeroSection({
     <section
       id="hero"
       className="relative flex items-center justify-center overflow-hidden"
-      style={{ minHeight: "70vh" }}
+      style={{ minHeight: "80vh" }}
     >
-      {/* Background */}
+      {/* Background images */}
       {hasImages ? (
         <>
           {images.map((src, idx) => (
@@ -266,13 +274,18 @@ function HeroSection({
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor} 0%, #1a1a2e 60%, #16213e 100%)`,
+            background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 60%, #78350f 100%)`,
           }}
         />
       )}
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/55" />
+      {/* Warm orange overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(to bottom, ${primaryColor}66 0%, ${secondaryColor}99 50%, ${secondaryColor}cc 100%)`,
+        }}
+      />
 
       {/* Logo — top left */}
       {(logoUrl || siteName) && (
@@ -316,6 +329,18 @@ function HeroSection({
 
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
+          style={{ backgroundColor: primaryColor + "33", border: `1px solid ${primaryColor}55` }}
+        >
+          <Map className="h-4 w-4" style={{ color: primaryColor }} />
+          <span
+            className="text-sm font-semibold text-white"
+            style={{ fontFamily: "var(--tp-font-body)" }}
+          >
+            Outback Haul — Across Australia
+          </span>
+        </div>
         <h1
           className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight mb-6"
           style={{ fontFamily: "var(--tp-font-heading)" }}
@@ -324,7 +349,7 @@ function HeroSection({
         </h1>
         {content.subheadline && (
           <p
-            className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed"
+            className="text-lg md:text-xl lg:text-2xl text-amber-100/90 max-w-2xl mx-auto mb-8 leading-relaxed"
             style={{ fontFamily: "var(--tp-font-body)" }}
           >
             {content.subheadline}
@@ -349,46 +374,37 @@ function HeroSection({
 }
 
 // =============================================================================
-// About Section
+// About Section — Timeline/company history style with vertical line
 // =============================================================================
 
 function AboutSection({
   content,
   primaryColor,
+  secondaryColor,
 }: {
   content: TemplateProps["sections"]["about"]["content"];
   primaryColor: string;
+  secondaryColor: string;
 }) {
-  return (
-    <section id="about" className="py-20 md:py-28 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-          {/* Text */}
-          <div>
-            <div
-              className="h-1 w-16 mb-6 rounded-full"
-              style={{ backgroundColor: primaryColor }}
-            />
-            <h2
-              className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6 leading-tight"
-              style={{ fontFamily: "var(--tp-font-heading)" }}
-            >
-              {content.heading}
-            </h2>
-            <p
-              className="text-gray-600 text-base md:text-lg leading-relaxed whitespace-pre-line"
-              style={{ fontFamily: "var(--tp-font-body)" }}
-            >
-              {content.body}
-            </p>
-          </div>
+  // Parse body into timeline entries — split by double newline or use as single entry
+  const bodyParagraphs = content.body
+    ? content.body.split("\n\n").filter(Boolean)
+    : [];
 
-          {/* Image */}
+  return (
+    <section
+      id="about"
+      className="py-20 md:py-28"
+      style={{ backgroundColor: "#fef7ed" }}
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-start">
+          {/* Left: Image */}
           {content.image_url && (
-            <div className="relative">
+            <div className="relative order-2 md:order-1">
               <div
                 className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl"
-                style={{ backgroundColor: primaryColor, opacity: 0.1 }}
+                style={{ backgroundColor: primaryColor, opacity: 0.12 }}
               />
               <img
                 src={content.image_url}
@@ -397,6 +413,57 @@ function AboutSection({
               />
             </div>
           )}
+
+          {/* Right: Timeline text */}
+          <div className="order-1 md:order-2">
+            <div
+              className="h-1 w-16 mb-6 rounded-full"
+              style={{ backgroundColor: primaryColor }}
+            />
+            <h2
+              className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-8 leading-tight"
+              style={{ fontFamily: "var(--tp-font-heading)", color: secondaryColor }}
+            >
+              {content.heading}
+            </h2>
+
+            {/* Timeline with vertical line */}
+            <div className="relative pl-8">
+              {/* Vertical line */}
+              <div
+                className="absolute left-3 top-2 bottom-2 w-0.5 rounded-full"
+                style={{ backgroundColor: primaryColor + "30" }}
+              />
+
+              {bodyParagraphs.length > 0 ? (
+                bodyParagraphs.map((paragraph, idx) => (
+                  <div key={idx} className="relative mb-6 last:mb-0">
+                    {/* Dot on timeline */}
+                    <div
+                      className="absolute -left-5 top-2 h-3 w-3 rounded-full border-2"
+                      style={{
+                        backgroundColor: idx === 0 ? primaryColor : "#fff",
+                        borderColor: primaryColor,
+                      }}
+                    />
+                    <p
+                      className="text-gray-700 text-base md:text-lg leading-relaxed whitespace-pre-line"
+                      style={{ fontFamily: "var(--tp-font-body)" }}
+                    >
+                      {paragraph}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p
+                  className="text-gray-700 text-base md:text-lg leading-relaxed whitespace-pre-line"
+                  style={{ fontFamily: "var(--tp-font-body)" }}
+                >
+                  {content.body}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -404,7 +471,7 @@ function AboutSection({
 }
 
 // =============================================================================
-// Services Section
+// Services Section — Icon circles with warm amber backgrounds
 // =============================================================================
 
 function ServicesSection({
@@ -419,24 +486,32 @@ function ServicesSection({
   const services = content.services ?? [];
 
   return (
-    <section
-      id="services"
-      className="py-20 md:py-28"
-      style={{ backgroundColor: secondaryColor + "12" }}
-    >
+    <section id="services" className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
-            style={{ fontFamily: "var(--tp-font-heading)" }}
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4"
+            style={{ backgroundColor: primaryColor + "15" }}
           >
-            Our Services
+            <Truck className="h-4 w-4" style={{ color: primaryColor }} />
+            <span
+              className="text-sm font-bold uppercase tracking-widest"
+              style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+            >
+              Our Services
+            </span>
+          </div>
+          <h2
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)", color: secondaryColor }}
+          >
+            Hauling Across the Outback
           </h2>
           <p
             className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto"
             style={{ fontFamily: "var(--tp-font-body)" }}
           >
-            Reliable, efficient, and tailored to your logistics needs
+            Reliable transport solutions for regional and remote Australia
           </p>
         </div>
 
@@ -444,25 +519,35 @@ function ServicesSection({
           {services.map((service, idx) => (
             <div
               key={idx}
-              className="group bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className="group text-center p-8 rounded-2xl border-2 border-transparent hover:border-current transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              style={{
+                backgroundColor: "#fffbeb",
+                borderColor: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = primaryColor + "40";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "transparent";
+              }}
             >
               <div
-                className="inline-flex items-center justify-center h-14 w-14 rounded-xl mb-5 transition-colors duration-300"
+                className="inline-flex items-center justify-center h-16 w-16 rounded-full mb-5 transition-transform duration-300 group-hover:scale-110"
                 style={{
-                  backgroundColor: primaryColor + "15",
+                  backgroundColor: primaryColor + "20",
                   color: primaryColor,
                 }}
               >
-                <ServiceIcon icon={service.icon} className="h-7 w-7" />
+                <ServiceIcon icon={service.icon} className="h-8 w-8" />
               </div>
               <h3
-                className="text-xl font-bold text-gray-900 mb-3"
-                style={{ fontFamily: "var(--tp-font-heading)" }}
+                className="text-xl font-bold mb-3"
+                style={{ fontFamily: "var(--tp-font-heading)", color: secondaryColor }}
               >
                 {service.title}
               </h3>
               <p
-                className="text-gray-500 text-sm md:text-base leading-relaxed"
+                className="text-gray-600 text-sm md:text-base leading-relaxed"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               >
                 {service.description}
@@ -546,19 +631,26 @@ function CalculatorSection({
   return (
     <section
       id="calculator"
-      className="py-20 md:py-28 bg-white"
+      className="py-20 md:py-28"
+      style={{ backgroundColor: "#fef7ed" }}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
+          <span
+            className="text-sm font-bold uppercase tracking-widest mb-2 inline-block"
+            style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+          >
+            Instant Pricing
+          </span>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
-            style={{ fontFamily: "var(--tp-font-heading)" }}
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)", color: secondaryColor }}
           >
             {content.heading || "Get an Instant Quote"}
           </h2>
           {content.description && (
             <p
-              className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto"
+              className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto"
               style={{ fontFamily: "var(--tp-font-body)" }}
             >
               {content.description}
@@ -569,7 +661,8 @@ function CalculatorSection({
         <div className="max-w-2xl mx-auto">
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-gray-100 bg-gray-50/50 p-8 shadow-sm space-y-5"
+            className="rounded-2xl border-2 p-8 shadow-sm space-y-5"
+            style={{ borderColor: primaryColor + "25", backgroundColor: "#fffbeb" }}
           >
             {/* Origin */}
             <div>
@@ -584,10 +677,10 @@ function CalculatorSection({
                 id="calc-origin"
                 type="text"
                 required
-                placeholder="e.g. London, UK"
+                placeholder="e.g. Broken Hill, NSW"
                 value={origin}
                 onChange={(e) => setOrigin(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                className="w-full rounded-lg border border-amber-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               />
             </div>
@@ -605,10 +698,10 @@ function CalculatorSection({
                 id="calc-destination"
                 type="text"
                 required
-                placeholder="e.g. Manchester, UK"
+                placeholder="e.g. Alice Springs, NT"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                className="w-full rounded-lg border border-amber-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               />
             </div>
@@ -627,13 +720,13 @@ function CalculatorSection({
                   id="calc-vehicle"
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                  className="w-full rounded-lg border border-amber-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
                   style={{ fontFamily: "var(--tp-font-body)" }}
                 >
                   <option value="">Standard (no surcharge)</option>
                   {surcharges.map((v, idx) => (
                     <option key={idx} value={v.type}>
-                      {v.type} (+{rateTable?.currency ?? "£"}{v.surcharge.toFixed(2)})
+                      {v.type} (+{rateTable?.currency ?? "$"}{v.surcharge.toFixed(2)})
                     </option>
                   ))}
                 </select>
@@ -666,10 +759,12 @@ function CalculatorSection({
 
           {/* Result */}
           {result && (
-            <div className="mt-8 rounded-2xl border border-green-100 bg-green-50/50 p-6">
+            <div className="mt-8 rounded-2xl border-2 border-amber-200 bg-amber-50 p-6">
               <div className="flex items-center gap-2 mb-4">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <h3 className="text-lg font-bold text-green-800">Quote Ready</h3>
+                <CheckCircle className="h-5 w-5 text-amber-700" />
+                <h3 className="text-lg font-bold" style={{ color: secondaryColor }}>
+                  Quote Ready
+                </h3>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -692,9 +787,9 @@ function CalculatorSection({
                     </span>
                   </div>
                 )}
-                <div className="border-t border-green-200 pt-2 flex justify-between">
-                  <span className="font-bold text-green-800">Total</span>
-                  <span className="font-bold text-green-800 text-lg">
+                <div className="border-t border-amber-300 pt-2 flex justify-between">
+                  <span className="font-bold" style={{ color: secondaryColor }}>Total</span>
+                  <span className="font-bold text-lg" style={{ color: secondaryColor }}>
                     {result.currency}{result.total.toFixed(2)}
                   </span>
                 </div>
@@ -704,7 +799,7 @@ function CalculatorSection({
 
           {/* Error */}
           {error && (
-            <div className="mt-8 rounded-2xl border border-red-100 bg-red-50/50 p-6">
+            <div className="mt-8 rounded-2xl border border-red-200 bg-red-50/50 p-6">
               <p className="text-red-700 text-sm font-medium">{error}</p>
             </div>
           )}
@@ -715,19 +810,20 @@ function CalculatorSection({
 }
 
 // =============================================================================
-// Testimonials Section
+// Testimonials Section — Warm card style with desert aesthetic
 // =============================================================================
 
 function TestimonialsSection({
   content,
   primaryColor,
+  secondaryColor,
 }: {
   content: TemplateProps["sections"]["testimonials"]["content"];
   primaryColor: string;
+  secondaryColor: string;
 }) {
   const testimonials = content.testimonials ?? [];
   const [current, setCurrent] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const prev = () => {
     setCurrent((c) => (c > 0 ? c - 1 : testimonials.length - 1));
@@ -742,26 +838,35 @@ function TestimonialsSection({
     <section id="testimonials" className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
-            style={{ fontFamily: "var(--tp-font-heading)" }}
+          <span
+            className="text-sm font-bold uppercase tracking-widest mb-2 inline-block"
+            style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
           >
-            What Our Clients Say
+            Testimonials
+          </span>
+          <h2
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)", color: secondaryColor }}
+          >
+            Voices from the Road
           </h2>
         </div>
 
-        {/* Mobile: single card with carousel controls */}
+        {/* Mobile: single card with carousel */}
         <div className="md:hidden">
-          <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 shadow-sm">
-            <StarRating rating={testimonials[current].rating} />
+          <div
+            className="rounded-2xl p-6 shadow-sm"
+            style={{ backgroundColor: "#fffbeb", border: `1px solid ${primaryColor}20` }}
+          >
+            <StarRating rating={testimonials[current].rating} accentColor={primaryColor} />
             <p
               className="text-gray-700 mt-4 mb-6 leading-relaxed text-sm"
               style={{ fontFamily: "var(--tp-font-body)" }}
             >
               &ldquo;{testimonials[current].text}&rdquo;
             </p>
-            <div>
-              <p className="font-bold text-gray-900 text-sm">
+            <div className="border-t pt-4" style={{ borderColor: primaryColor + "20" }}>
+              <p className="font-bold text-sm" style={{ color: secondaryColor }}>
                 {testimonials[current].name}
               </p>
               <p className="text-gray-500 text-xs">
@@ -774,7 +879,7 @@ function TestimonialsSection({
               <button
                 type="button"
                 onClick={prev}
-                className="h-10 w-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+                className="h-10 w-10 rounded-full border border-amber-200 flex items-center justify-center text-amber-700 hover:bg-amber-50 transition-colors"
                 aria-label="Previous testimonial"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -785,7 +890,7 @@ function TestimonialsSection({
               <button
                 type="button"
                 onClick={next}
-                className="h-10 w-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+                className="h-10 w-10 rounded-full border border-amber-200 flex items-center justify-center text-amber-700 hover:bg-amber-50 transition-colors"
                 aria-label="Next testimonial"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -799,17 +904,21 @@ function TestimonialsSection({
           {testimonials.map((t, idx) => (
             <div
               key={idx}
-              className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+              style={{
+                backgroundColor: "#fffbeb",
+                border: `1px solid ${primaryColor}15`,
+              }}
             >
-              <StarRating rating={t.rating} />
+              <StarRating rating={t.rating} accentColor={primaryColor} />
               <p
                 className="text-gray-700 mt-4 mb-6 leading-relaxed"
                 style={{ fontFamily: "var(--tp-font-body)" }}
               >
                 &ldquo;{t.text}&rdquo;
               </p>
-              <div>
-                <p className="font-bold text-gray-900">{t.name}</p>
+              <div className="border-t pt-4" style={{ borderColor: primaryColor + "20" }}>
+                <p className="font-bold" style={{ color: secondaryColor }}>{t.name}</p>
                 <p className="text-gray-500 text-sm">{t.company}</p>
               </div>
             </div>
@@ -827,10 +936,12 @@ function TestimonialsSection({
 function ContactSection({
   content,
   primaryColor,
+  secondaryColor,
   siteName,
 }: {
   content: TemplateProps["sections"]["contact"]["content"];
   primaryColor: string;
+  secondaryColor: string;
   siteName: string;
 }) {
   const [formState, setFormState] = useState({
@@ -882,13 +993,19 @@ function ContactSection({
     <section
       id="contact"
       className="py-20 md:py-28"
-      style={{ backgroundColor: "var(--tp-secondary, #f8fafc)" }}
+      style={{ backgroundColor: "#fef7ed" }}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
+          <span
+            className="text-sm font-bold uppercase tracking-widest mb-2 inline-block"
+            style={{ color: primaryColor, fontFamily: "var(--tp-font-body)" }}
+          >
+            Contact
+          </span>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
-            style={{ fontFamily: "var(--tp-font-heading)" }}
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4"
+            style={{ fontFamily: "var(--tp-font-heading)", color: secondaryColor }}
           >
             {content.heading || "Get in Touch"}
           </h2>
@@ -898,18 +1015,19 @@ function ContactSection({
           {/* Form */}
           <div>
             {submitted ? (
-              <div className="rounded-2xl border border-green-100 bg-green-50 p-8 text-center">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-green-800 mb-2">
+              <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-8 text-center">
+                <CheckCircle className="h-12 w-12 mx-auto mb-4" style={{ color: primaryColor }} />
+                <h3 className="text-xl font-bold mb-2" style={{ color: secondaryColor }}>
                   Message Sent!
                 </h3>
-                <p className="text-green-700 text-sm">
+                <p className="text-gray-600 text-sm">
                   We&apos;ll get back to you as soon as possible.
                 </p>
                 <button
                   type="button"
                   onClick={() => setSubmitted(false)}
-                  className="mt-4 text-sm font-medium underline text-green-700 hover:text-green-900"
+                  className="mt-4 text-sm font-medium underline hover:opacity-80"
+                  style={{ color: primaryColor }}
                 >
                   Send another message
                 </button>
@@ -931,8 +1049,8 @@ function ContactSection({
                     required
                     value={formState.name}
                     onChange={(e) => handleChange("name", e.target.value)}
-                    placeholder="John Smith"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                    placeholder="Bruce O'Brien"
+                    className="w-full rounded-lg border border-amber-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
                     style={{ fontFamily: "var(--tp-font-body)" }}
                   />
                 </div>
@@ -952,8 +1070,8 @@ function ContactSection({
                     required
                     value={formState.email}
                     onChange={(e) => handleChange("email", e.target.value)}
-                    placeholder="john@example.com"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                    placeholder="bruce@outbackhaul.com.au"
+                    className="w-full rounded-lg border border-amber-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
                     style={{ fontFamily: "var(--tp-font-body)" }}
                   />
                 </div>
@@ -972,8 +1090,8 @@ function ContactSection({
                     type="tel"
                     value={formState.phone}
                     onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="+44 7700 900000"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
+                    placeholder="+61 8 8000 0000"
+                    className="w-full rounded-lg border border-amber-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20"
                     style={{ fontFamily: "var(--tp-font-body)" }}
                   />
                 </div>
@@ -993,8 +1111,8 @@ function ContactSection({
                     rows={4}
                     value={formState.message}
                     onChange={(e) => handleChange("message", e.target.value)}
-                    placeholder="Tell us about your transport needs…"
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20 resize-y"
+                    placeholder="Tell us about your haulage needs across the outback…"
+                    className="w-full rounded-lg border border-amber-200 bg-white px-4 py-3 text-gray-900 text-sm outline-none transition-colors focus:border-[var(--tp-primary)] focus:ring-2 focus:ring-[var(--tp-primary)]/20 resize-y"
                     style={{ fontFamily: "var(--tp-font-body)" }}
                   />
                 </div>
@@ -1038,7 +1156,7 @@ function ContactSection({
                 <div className="flex items-start gap-3">
                   <div
                     className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
-                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
+                    style={{ backgroundColor: primaryColor + "18", color: primaryColor }}
                   >
                     <Mail className="h-5 w-5" />
                   </div>
@@ -1057,7 +1175,7 @@ function ContactSection({
                 <div className="flex items-start gap-3">
                   <div
                     className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
-                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
+                    style={{ backgroundColor: primaryColor + "18", color: primaryColor }}
                   >
                     <Phone className="h-5 w-5" />
                   </div>
@@ -1076,7 +1194,7 @@ function ContactSection({
                 <div className="flex items-start gap-3">
                   <div
                     className="inline-flex items-center justify-center h-10 w-10 rounded-lg shrink-0"
-                    style={{ backgroundColor: primaryColor + "15", color: primaryColor }}
+                    style={{ backgroundColor: primaryColor + "18", color: primaryColor }}
                   >
                     <MapPin className="h-5 w-5" />
                   </div>
@@ -1090,7 +1208,7 @@ function ContactSection({
 
             {/* Map embed */}
             {content.map_embed_url && (
-              <div className="rounded-xl overflow-hidden border border-gray-200 mt-4">
+              <div className="rounded-xl overflow-hidden border border-amber-200 mt-4">
                 <iframe
                   src={content.map_embed_url}
                   width="100%"
@@ -1117,33 +1235,33 @@ function ContactSection({
 function FooterSection({
   content,
   primaryColor,
+  secondaryColor,
 }: {
   content: TemplateProps["sections"]["footer"]["content"];
   primaryColor: string;
+  secondaryColor: string;
 }) {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer style={{ backgroundColor: secondaryColor }} className="text-amber-100">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          {/* Company name + copyright */}
           <div>
             <p
-              className="text-xl font-bold text-white mb-1"
+              className="text-xl font-bold text-amber-50 mb-1"
               style={{ fontFamily: "var(--tp-font-heading)" }}
             >
               {content.company_name}
             </p>
-            <p className="text-sm text-gray-500">{content.copyright_text}</p>
+            <p className="text-sm text-amber-200/60">{content.copyright_text}</p>
           </div>
 
-          {/* Links */}
           {content.links && content.links.length > 0 && (
             <nav className="flex flex-wrap gap-x-6 gap-y-2">
               {content.links.map((link, idx) => (
                 <a
                   key={idx}
                   href={link.url}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className="text-sm text-amber-200/70 hover:text-amber-100 transition-colors"
                   style={{ fontFamily: "var(--tp-font-body)" }}
                 >
                   {link.label}
@@ -1153,7 +1271,6 @@ function FooterSection({
           )}
         </div>
 
-        {/* Bottom accent line */}
         <div
           className="mt-8 h-0.5 w-20 rounded-full"
           style={{ backgroundColor: primaryColor }}
@@ -1164,14 +1281,16 @@ function FooterSection({
 }
 
 // =============================================================================
-// Mobile Navigation
+// Mobile Navigation — Warm themed
 // =============================================================================
 
 function MobileNav({
   primaryColor,
+  secondaryColor,
   sections,
 }: {
   primaryColor: string;
+  secondaryColor: string;
   sections: TemplateProps["sections"];
 }) {
   const [open, setOpen] = useState(false);
@@ -1179,32 +1298,23 @@ function MobileNav({
   const navItems = [
     { id: "about", label: "About", show: sections.about.is_enabled },
     { id: "services", label: "Services", show: sections.services.is_enabled },
-    {
-      id: "calculator",
-      label: "Calculator",
-      show: sections.calculator.is_enabled,
-    },
-    {
-      id: "testimonials",
-      label: "Testimonials",
-      show: sections.testimonials.is_enabled,
-    },
+    { id: "calculator", label: "Calculator", show: sections.calculator.is_enabled },
+    { id: "testimonials", label: "Testimonials", show: sections.testimonials.is_enabled },
     { id: "contact", label: "Contact", show: sections.contact.is_enabled },
   ].filter((i) => i.show);
 
   return (
     <>
-      {/* Hamburger */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed top-4 right-4 z-50 md:hidden h-10 w-10 rounded-lg bg-black/40 backdrop-blur-sm flex items-center justify-center text-white"
+        className="fixed top-4 right-4 z-50 md:hidden h-10 w-10 rounded-lg flex items-center justify-center text-white"
+        style={{ backgroundColor: secondaryColor + "cc" }}
         aria-label="Open menu"
       >
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden"
@@ -1212,18 +1322,18 @@ function MobileNav({
         />
       )}
 
-      {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-72 bg-white shadow-2xl transform transition-transform duration-300 md:hidden ${
+        className={`fixed top-0 right-0 z-50 h-full w-72 shadow-2xl transform transition-transform duration-300 md:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{ backgroundColor: "#451a03" }}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <span className="font-bold text-gray-900">Menu</span>
+        <div className="flex items-center justify-between p-4 border-b border-amber-900/30">
+          <span className="font-bold text-amber-100">Menu</span>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-amber-300 hover:text-amber-100"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
@@ -1238,7 +1348,7 @@ function MobileNav({
                 scrollToSection(item.id);
                 setOpen(false);
               }}
-              className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium text-sm transition-colors"
+              className="w-full text-left px-4 py-3 rounded-lg text-amber-200 hover:bg-amber-900/20 hover:text-amber-100 font-medium text-sm transition-colors"
             >
               {item.label}
             </button>
@@ -1255,9 +1365,11 @@ function MobileNav({
 
 function DesktopNav({
   primaryColor,
+  secondaryColor,
   sections,
 }: {
   primaryColor: string;
+  secondaryColor: string;
   sections: TemplateProps["sections"];
 }) {
   const [scrolled, setScrolled] = useState(false);
@@ -1271,16 +1383,8 @@ function DesktopNav({
   const navItems = [
     { id: "about", label: "About", show: sections.about.is_enabled },
     { id: "services", label: "Services", show: sections.services.is_enabled },
-    {
-      id: "calculator",
-      label: "Calculator",
-      show: sections.calculator.is_enabled,
-    },
-    {
-      id: "testimonials",
-      label: "Testimonials",
-      show: sections.testimonials.is_enabled,
-    },
+    { id: "calculator", label: "Calculator", show: sections.calculator.is_enabled },
+    { id: "testimonials", label: "Testimonials", show: sections.testimonials.is_enabled },
     { id: "contact", label: "Contact", show: sections.contact.is_enabled },
   ].filter((i) => i.show);
 
@@ -1289,8 +1393,9 @@ function DesktopNav({
       className={`hidden md:flex fixed top-0 left-0 right-0 z-40 items-center justify-between px-8 h-16 transition-all duration-300 ${
         scrolled
           ? "bg-white/95 backdrop-blur-md shadow-sm"
-          : "bg-transparent"
+          : ""
       }`}
+      style={!scrolled ? { backgroundColor: secondaryColor + "cc" } : undefined}
     >
       <div className="flex items-center gap-6">
         {navItems.map((item) => (
@@ -1301,7 +1406,7 @@ function DesktopNav({
             className={`text-sm font-medium transition-colors ${
               scrolled
                 ? "text-gray-700 hover:text-gray-900"
-                : "text-white/80 hover:text-white"
+                : "text-amber-200/80 hover:text-amber-100"
             }`}
           >
             {item.label}
@@ -1425,10 +1530,10 @@ function StatsSection({
 }
 
 // =============================================================================
-// Main Template Component
+// Main Template Component — OutbackHaul
 // =============================================================================
 
-export default function HaulierBold(props: TemplateProps) {
+export default function OutbackHaul(props: TemplateProps) {
   const {
     siteName,
     config,
@@ -1438,17 +1543,15 @@ export default function HaulierBold(props: TemplateProps) {
     plan,
   } = props;
 
-  const primaryColor = config.primary_color || "#e63946";
-  const secondaryColor = config.secondary_color || "#1d3557";
+  const primaryColor = config.primary_color || "#d97706";
+  const secondaryColor = config.secondary_color || "#451a03";
 
   const isProOrAbove = plan === "pro" || plan === "premium";
 
   return (
     <>
-      {/* Google Analytics */}
       {integrations?.ga4_id && <GoogleAnalytics ga4Id={integrations.ga4_id} />}
 
-      {/* Wrapper with CSS custom properties for dynamic theming */}
       <div
         style={
           {
@@ -1460,34 +1563,31 @@ export default function HaulierBold(props: TemplateProps) {
         }
         className="min-h-screen bg-white text-gray-900 antialiased"
       >
-        {/* Navigation */}
-        <DesktopNav primaryColor={primaryColor} sections={sections} />
-        <MobileNav primaryColor={primaryColor} sections={sections} />
+        <DesktopNav primaryColor={primaryColor} secondaryColor={secondaryColor} sections={sections} />
+        <MobileNav primaryColor={primaryColor} secondaryColor={secondaryColor} sections={sections} />
 
-        {/* Hero */}
         {sections.hero.is_enabled && (
           <HeroSection
             content={sections.hero.content}
             primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
             logoUrl={sections.hero.content.logo_url}
             siteName={siteName}
           />
         )}
 
-        {/* Stats */}
         {sections.stats.is_enabled && (
           <StatsSection content={sections.stats.content} primaryColor={config.primary_color} />
         )}
 
-        {/* About */}
         {sections.about.is_enabled && (
           <AboutSection
             content={sections.about.content}
             primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
           />
         )}
 
-        {/* Services */}
         {sections.services.is_enabled && (
           <ServicesSection
             content={sections.services.content}
@@ -1496,7 +1596,6 @@ export default function HaulierBold(props: TemplateProps) {
           />
         )}
 
-        {/* Calculator — Pro/Premium only */}
         {sections.calculator.is_enabled && isProOrAbove && (
           <CalculatorSection
             content={sections.calculator.content}
@@ -1507,28 +1606,28 @@ export default function HaulierBold(props: TemplateProps) {
           />
         )}
 
-        {/* Testimonials */}
         {sections.testimonials.is_enabled && (
           <TestimonialsSection
             content={sections.testimonials.content}
             primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
           />
         )}
 
-        {/* Contact */}
         {sections.contact.is_enabled && (
           <ContactSection
             content={sections.contact.content}
             primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
             siteName={siteName}
           />
         )}
 
-        {/* Footer */}
         {sections.footer.is_enabled && (
           <FooterSection
             content={sections.footer.content}
             primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
           />
         )}
       </div>
